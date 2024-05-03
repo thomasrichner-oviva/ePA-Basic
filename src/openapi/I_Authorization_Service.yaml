@@ -36,10 +36,14 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
 
-  version: 1.1.2
+  version: 1.2.0
 
   # version history:
   # ----------------
+  # version 1.2.0
+  #   - bugfix UserAgentType
+  #   - typo in VauUserPseudonymType corrected
+  #   - changed http-statuscode in operation logoutFdv to 204
   # version 1.1.2
   #   - correction of typos in descriptions
   #   - changed amr for representative authentication via ePA-FdV
@@ -692,7 +696,7 @@ paths:
 
         | Conditions | Status code | Error code | Remarks |
         |------------|-------------|------------|---------|
-        | Successful logout | 200 |||
+        | Successful logout | 204 |||
         | Request does not match schema | 400 | malformedRequest ||
         | Any other error | 500 | internalError ||
 
@@ -702,7 +706,7 @@ paths:
         | The user session and all related temporary data is terminated / deleted ||
        
       responses:
-        '200':
+        '204':
           description: "OK"
         '400':
           $ref: '#/components/responses/Error400BadRequest'
@@ -761,7 +765,7 @@ components:
             type: object
             properties:
               vau-np:
-                $ref: '#/components/schemas/VauUserPreudonymType'
+                $ref: '#/components/schemas/VauUserPseudonymType'
             required:
               - vau-np
 
@@ -833,7 +837,7 @@ components:
     UserAgentType:
       description: "Information about client software with: ClientId(20 characters) + / + VersionNumber (1 to 15 characters)."
       type: string
-      pattern: '^[a-zA-Z0-9]{20}\/[a-zA-Z0-9\-\.]{1,15}$'
+      pattern: '^[a-zA-Z0-9\-]{1,20}\/[a-zA-Z0-9\-\.]{1,15}$'
       example: CLIENTID1234567890AB/2.1.12-45
     DeviceIdentifierType:
       description: A device identifier
@@ -874,7 +878,7 @@ components:
         - authorizationCode
       example:
         authorizationCode: 2435623452hkjlk34t
-    VauUserPreudonymType:
+    VauUserPseudonymType:
       description: The VAU user pseudonym (VAU-NP), a string of hexadecimal digits (e.g. 64 digits)
       type: string
       example: "4aadc671bf058fb6df5f181ad94f4130b3d3e86f3a7ffd53e6ea6a3f01e65608"

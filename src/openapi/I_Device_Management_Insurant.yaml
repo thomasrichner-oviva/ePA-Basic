@@ -41,10 +41,13 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
 
-  version: 1.1.0
+  version: 1.2.0
 
   # version history:
   # ----------------
+  # version 1.2.0
+  #   - bugfix UserAgentType
+  #   - changed http-statuscode in description of operation deleteDevice to 204  
   # version 1.1.0
   #   - API change to support confirmation of device registration with a confirmation code
   #   - added operations to register and confirm devices.
@@ -633,7 +636,7 @@ paths:
 
         | Conditions | Status code | Error code | Remarks |
         |------------|-------------|------------|---------|
-        | Successful operation | 200|||
+        | Successful operation | 204 |||
         | Request does not match schema | 400 | malformedRequest ||
         | Requestor role is not _oid_versicherter_ | 403 | invalidOid ||
         | Device registration (_deviceidentifier_) does not exist | 404 | noResource | also if device is not associated to requestor kvnr |
@@ -766,7 +769,7 @@ components:
     UserAgentType:
       description: "Information about client software with: ClientId(20 characters) + / + VersionNumber (1 to 15 characters)."
       type: string
-      pattern: '^[a-zA-Z0-9]{20}\/[a-zA-Z0-9\-\.]{1,15}$'
+      pattern: '^[a-zA-Z0-9\-]{1,20}\/[a-zA-Z0-9\-\.]{1,15}$'
       example: CLIENTID1234567890AB/2.1.12-45
     BaseDeviceType:
       type: object

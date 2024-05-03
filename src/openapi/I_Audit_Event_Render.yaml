@@ -38,10 +38,12 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
 
-  version: 1.1.1
+  version: 1.2.0
 
   # version history:
   # ----------------
+  # version 1.2.0
+  #   - bugfix regex UserAgentType
   # version 1.1.1
   #   - changed format for PDF response
   # version 1.1.0
@@ -184,7 +186,7 @@ components:
     UserAgentType:
       description: "Information about client software with: ClientId(20 characters) + / + VersionNumber (1 to 15 characters)."
       type: string
-      pattern: '^[a-zA-Z0-9]{20}\/[a-zA-Z0-9\-\.]{1,15}$'
+      pattern: '^[a-zA-Z0-9\-]{1,20}\/[a-zA-Z0-9\-\.]{1,15}$'
       example: CLIENTID1234567890AB/2.1.12-45
     ErrorType:
       description: Error object with additional information about the occurred error

@@ -25,10 +25,15 @@ info:
     not essentially required for the operation (e.g. raw-data collection), and
     may be considered for provider internal use. 
 
-  version: 1.0.0
+  version: 1.1.0
 
   # version history:
   # ----------------
+  # version 1.1.0
+  #   - bugfix UserAgentType
+  #   - clarification for x-useragent usage by ePrescription backend in getConsentDecisionInformation
+  #   - changed http-statuscode in operation getRecordStatus to 204
+  #   - changed http-statuscode in operation setUserExpirienceResult to 201
   # version 1.0.1
   #   - Changed statuscode in setUserExperienceResult for missing parameter x-useragent to '400'
   #   - bugfixes
@@ -81,7 +86,7 @@ paths:
        **Provider**</br>
        | Conditions | Status code | Error code | Remarks |
        |------------|-------------|------------|---------|
-       | Health record exists and is in state ACTIVATED | 200 |||
+       | Health record exists and is in state ACTIVATED | 204 |||
        | Request does not match schema | 400 | malformedRequest ||
        | Health record does not exist (UNKNOWN) or is in state INITIALIZED | 404 | noHealthRecord | _insurantid_ unknown |
        | Health record is not in state ACTIVATED (i.e. is in state SUSPENDED) | 409 | statusMismatch | (see 'Retry interval') |
@@ -93,7 +98,7 @@ paths:
        | none ||
 
       responses:
-        '200':
+        '204':
           description: Ok. Record exists and is in state ACTIVATED
         '400':
           $ref: '#/components/responses/Error400BadRequest'
@@ -120,8 +125,6 @@ paths:
        **Client**</br>
        This operation may be invoked prior to a login to the addressed health record. </br>
        The current decisions may be evaluated for operational use by a client.</br>
-       The parameter _useragent_ is mandatory for clients of healthcare institutions. The ePrescription
-       backend shall not provide this information.
         
        **Provider**</br>
        The response shall cover decisions with consent class "healthCareProcess" only as prepared by Consent 
@@ -189,7 +192,7 @@ paths:
 
        | Conditions | Status code | Error code | Remarks |
        |------------|-------------|------------|---------|
-       | Successful operation | 200 |||
+       | Successful operation | 201 |||
        | Request does not match schema | 400 | malformedRequest ||
        | Any other error | 500 | internalError | (see 'Retry interval') |
 
@@ -207,7 +210,7 @@ paths:
             schema:
               $ref: "#/components/schemas/UxRequestType"
       responses:
-        '200':
+        '201':
           description: Ok. Data collected
         '400':
           $ref: '#/components/responses/Error400BadRequest'
@@ -296,7 +299,7 @@ components:
     UserAgentType:
       description: "Information about client software with: ClientId(20 characters) + / + VersionNumber (1 to 15 characters)."
       type: string
-      pattern: '^[a-zA-Z0-9]{20}\/[a-zA-Z0-9\-\.]{1,15}$'
+      pattern: '^[a-zA-Z0-9\-]{1,20}\/[a-zA-Z0-9\-\.]{1,15}$'
       example: CLIENTID1234567890AB/2.1.12-45
     UxRequestType:
       type: object

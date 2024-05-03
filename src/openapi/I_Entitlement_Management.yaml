@@ -41,9 +41,14 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
 
-  version: 1.1.1
+  version: 1.2.0 
+
   # version history:
   # ----------------
+  # version 1.2.0
+  #   - bugfix UserAgentType
+  #   - correction in regex TelematikIdType
+  #   - changed http-statuscode in description of operation setBlockedUserPolicyAssignment to 201  
   # version 1.1.1
   #   - deleteEntitlement: requirement to delete representatives email address removed
   # version 1.1.0
@@ -747,7 +752,7 @@ paths:
 
         | Conditions | Status code | Error code | Remarks |
         |------------|-------------|------------|---------|
-        | Successful operation | 200 |||
+        | Successful operation | 201 |||
         | Request does not match schema | 400 | malformedRequest ||
         | Requestor has no valid entitlement | 403 | notEntitled ||
         | Requestor role is not _oid_versicherter_ or _oid_ombudsstelle_ | 403 | invalidOid ||
@@ -1029,7 +1034,8 @@ components:
       example: Z123456789
     TelematikIdType:
       type: string
-      pattern: '[0-9]{1}[-]{1}\d{1,126}$'
+      pattern: '^[1-9][0-9]?-[\x{21}-\x{7E}]+$'
+      maxLength: 128
       example: 2-883110000118994
     OidType:
       description: A professionOID
@@ -1151,7 +1157,7 @@ components:
     UserAgentType:
       description: "Information about client software with: ClientId(20 characters) + / + VersionNumber (1 to 15 characters)."
       type: string
-      pattern: '^[a-zA-Z0-9]{20}\/[a-zA-Z0-9\-\.]{1,15}$'
+      pattern: '^[a-zA-Z0-9\-]{1,20}\/[a-zA-Z0-9\-\.]{1,15}$'
       example: CLIENTID1234567890AB/2.1.12-45
     InsurantIdType:
       type: string
