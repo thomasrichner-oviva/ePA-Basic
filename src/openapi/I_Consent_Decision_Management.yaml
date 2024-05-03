@@ -39,10 +39,13 @@ info:
     Whenever a _Postcondition_ mandates a log-entry, this entry shall contain
     data as defined in A_24055*.
 
-  version: 1.1.1
+  version: 1.2.0
 
   # version history:
   # ----------------
+  # version 1.2.0
+  #   - bugfix UserAgentType
+  #   - return all changed consent decisions in response of updateConsentDecision  
   # version 1.1.1
   #   - reworked the correction of depending consent decision change 'medication' and 'erp-submission' 
   # version 1.1.0
@@ -134,7 +137,9 @@ paths:
 
         An email shall be sent to the insurant using the registered mail address after a successful change of 
         a decision for notification. The mail shall contain understandable information about the changed consent
-        decision and timestamp of change (according to A_24844*) 
+        decision(s) and timestamp of change (according to A_24844*)."
+
+        The response of a successful operation shall contain all changed consent decisions. 
 
         | Conditions | Status code | Error code | Remarks |
         |------------|-------------|------------|---------|
@@ -169,11 +174,11 @@ paths:
           application/json:
             examples:
               Permit:
-                summary: Permit request
+                summary: Permit request (e.g functionid == medication)
                 value:
                  decision: "permit"
               Deny:
-                summary: Deny request
+                summary: Deny request (e.g functionid == erp-submission)
                 value:
                  decision: "deny"
             schema:
@@ -185,22 +190,28 @@ paths:
             application/json:
               examples:
                 Permit_Medication:
-                  summary: Permit medication request response
+                  summary: Permit functionid == medication (permits erp-submission internally) response
                   value:
-                    functionId: "medication"
-                    decision: "permit"
-                Deny_Medication:
-                  summary: Deny medication request response
+                    - functionId: "medication"
+                      decision: "permit"
+                    - functionId: "erp-submission"
+                      decision: "permit"
+                Deny_erp-submission:
+                  summary: Deny functionid == erp-submission (denies medication internally) response
                   value:
-                    functionId: "medication"
-                    decision: "deny"
-                Deny_Erp-submission:
-                  summary: Deny erp-submission request response
+                    - functionId: "medication"
+                      decision: "deny"
+                    - functionId: "erp-submission"
+                      decision: "deny"
+                Deny_erp-submission2:
+                  summary: Deny functionid == erp-submission (medication already denied) response
                   value:
-                    functionId: "erp-submission"
-                    decision: "deny"
+                    - functionId: "erp-submission"
+                      decision: "deny"
               schema:
-                $ref: "#/components/schemas/ConsentDecisionsResponseType"
+                type: array
+                items:
+                  $ref: "#/components/schemas/ConsentDecisionsResponseType"
         '400':
           $ref: "#/components/responses/Error400BadRequest"
         '403':
@@ -418,7 +429,7 @@ components:
     UserAgentType:
       description: "Information about client software with: ClientId(20 characters) + / + VersionNumber (1 to 15 characters)."
       type: string
-      pattern: '^[a-zA-Z0-9]{20}\/[a-zA-Z0-9\-\.]{1,15}$'
+      pattern: '^[a-zA-Z0-9\-]{1,20}\/[a-zA-Z0-9\-\.]{1,15}$'
       example: CLIENTID1234567890AB/2.1.12-45
     FunctionIdType:
       type: string

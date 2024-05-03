@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: I_Test_Driver_FdV
   description: REST Test Interface for the Insurant´s User Frontend (FdV)
-  version: 3.0.0
+  version: 3.0.1
   contact:
     name: gematik GmbH
     email: software-development@gematik.de
@@ -26,23 +26,23 @@ servers:
         default: fdv-testdriver
 tags:
   - name: Login / Logout
-    description: 'starts or ends a user session'
+    description: starts or ends a user session
   - name: Entitle Management
     description: 'list, update, add or remove entitlements, list or configure the blocked user policy'
   - name: Consent Decision Management
-    description: 'list or update entries the consent decision management'
+    description: list or update entries the consent decision management
   - name: Constraint Management
-    description: 'list, add or remove the general deny policy and the user-specific deny policy resp.'
+    description: 'list, add or remove the general deny policy'
   - name: Device Management
     description: 'list, add or remove devices registered for a user'
   - name: Medication
-    description: 'list medications'
+    description: list medications
   - name: Audit Event
-    description: 'list audit events'
+    description: list audit events
   - name: XDS Document
     description: 'list, retrieve, add or remove documents, folders, update metadata'
   - name: Directory
-    description: 'search for LEI or DIGA at FHIR-VZD'
+    description: search for LEI or DIGA at FHIR-VZD
   - name: Email Address Management
     description: 'list, add or remove email addresses of an insurant'
 paths:
@@ -509,7 +509,7 @@ paths:
     get:
       tags:
         - Constraint Management
-      summary: Get a combined list of actual set assignments of the general deny policy and the user-specific deny policy of a personal health record.
+      summary: List all current constraints
       description: 'This operation executes the use case "List all current constraints" in an existing user session. By default, the health record of the user is addressed, otherwise the health record is identified by "recordId".'
       operationId: getConstraints
       parameters:
@@ -524,7 +524,7 @@ paths:
     post:
       tags:
         - Constraint Management
-      summary: Set a new assignment for a deny policy (general or user-specific) for a personal health record.
+      summary: Set a new assignment for a deny policy for a personal health record.
       description: 'This operation executes the use case "Add a new deny policy" in an existing user session. By default, the health record of the user is addressed, otherwise the health record is identified by "recordId".'
       operationId: postConstraints
       requestBody:
@@ -581,7 +581,7 @@ paths:
       tags:
         - Device Management
       summary: Add a new device as registered devices for a user (associated to kvnr of requestor).
-      description: 'This operation executes the use case "Add a registered device" in an existing user session.'
+      description: This operation executes the use case "Add a registered device" in an existing user session.
       operationId: putRegisteredDevice
       parameters:
         - in: path
@@ -760,7 +760,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PostEmailResponseDTO'
-  /epa/testdriver/api/v1/emails/{identifier}:
+  '/epa/testdriver/api/v1/emails/{identifier}':
     parameters:
       - in: path
         name: identifier
@@ -985,6 +985,7 @@ components:
           required:
             - insurantId
             - email
+            - displayName
           properties:
             insurantId:
               $ref: '#/components/schemas/KvnrType'
@@ -992,6 +993,8 @@ components:
               type: string
               format: email
               example: name@example.com
+            displayName:
+              $ref: '#/components/schemas/DisplayNameType'
     PutBlockedUserRequestDTO:
       allOf:
         - $ref: '#/components/schemas/RequestDTO'
@@ -1374,25 +1377,35 @@ components:
         - $ref: '#/components/schemas/EmailIdentifierType'
     ProductInformationResponseDTO:
       type: object
-      description: product information
+      description: product information of epa fdv
       properties:
         producerId:
           type: string
           maxLength: 5
           description: manufacturer ID
-        code:
-          type: string
-          maxLength: 8
-          description: product Code
-        version:
+        productVersion:
           type: string
           maxLength: 12
           description: product version
           example: 1.0.0-0
+        productType:
+          type: string
+          description: 'product Type, GS-A_3702'
+        productTypeVersion:
+          type: string
+          description: 'product Type Version, GS-A_3702'
+        productIdentification:
+          type: string
+          description: 'Product identification, GS-A_3702'
+        timeStamp:
+          type: string
+          format: date-time
+          description: 'date-time notation as defined by RFC 3339, section 5.6'
+          example: '2017-07-21T17:32:28Z'
       required:
-        - producerId
-        - code
-        - version
+        - productVersion
+        - productType
+        - productTypeVersion
     AuthorInstitution:
       type: object
       description: 'Institution, which is related to the author'
@@ -2046,7 +2059,8 @@ components:
       example: Z123456789
     TelematikIdType:
       type: string
-      pattern: '[0-9]{1}[-]{1}\d{1,126}$'
+      pattern: '^[1-9][0-9]?-[\x{21}-\x{7E}]+$'
+      maxLength: 128
       example: 2-883110000118994
     OidType:
       description: A professionOID
@@ -2430,30 +2444,29 @@ components:
       properties:
         uniqueId:
           type: string
-
     EmailAddressType:
       type: string
-      description: "email address"
+      description: email address
       format: email
-      example: "name@example.com"
+      example: name@example.com
     EmailIdentifierType:
       type: string
-      description: "Unique identifier of an email"
-      example: "0815"
+      description: Unique identifier of an email
+      example: '0815'
     EmailType:
       type: object
       properties:
         email:
           $ref: '#/components/schemas/EmailAddressType'
         actor:
-          description: "creator of the email address - name of user session"
+          description: creator of the email address - name of user session
           type: string
-          example: "Betriebskrankenkasse ABC"
+          example: Betriebskrankenkasse ABC
         createdAt:
           description: timestamp of email registration
           type: string
           format: date-time
-          example: "2025-04-22T14:23:01Z"
+          example: '2025-04-22T14:23:01Z'
       required:
         - email
         - actor
@@ -2468,4 +2481,3 @@ components:
       required:
         - identifier
         - emailType
-

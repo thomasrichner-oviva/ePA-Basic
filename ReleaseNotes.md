@@ -1,6 +1,14 @@
 <img align="right" width="250" height="47" src="images/Gematik_Logo_Flag_With_Background.png"/> <br/>    
  
 # Release Notes ePA Basic
+## Release 3.0.1-1
+### changes
+- bugfix regex UserAgentType (C_11780)
+- typo correction in I_Authorization_Service.yaml
+- x-useragent mandatory in I_Information_Service.yaml (C_11779)
+- changed http-statuscodes from 200 to 201 or 204 in openapis (C_11811)
+- all changed consent decisions in response of updateConsentDecision in I_Consent_Decision_Management.yaml (C_11783)
+- regex correction TelematikIdType I_Entitlement_Management.yaml and I_Test_Driver_FdV.yaml (C_11782)
 ## Release 3.0.1
 - release ePA-3.0.1
 - (all changes from changelist 'ePAfueralle_3.0.1' and final review)
