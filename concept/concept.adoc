@@ -372,7 +372,7 @@ In diesem Kapitel werden technische Konzepte zu verschiedenen Medical Services d
 
 In den folgenden Links werden technische Konzepte zu verschiedenen Medical Services der ePA vorgestellt, die als Basis für die Spezifikation dienen.
 
-link:https://github.com/gematik/ePA-XDS-Document/tree/ePA-3.0.1/concept[Dokumentenmanagement (XDS Document Service)]
+link:https://github.com/gematik/ePA-XDS-Document/tree/ePA-3.0.2/concept[Dokumentenmanagement (XDS Document Service)]
 
 
 [#_versorgungsprozesse]
@@ -380,7 +380,7 @@ link:https://github.com/gematik/ePA-XDS-Document/tree/ePA-3.0.1/concept[Dokument
 
 Die ePA unterstützt verschiedene Versorgungsprozesse mittels dedizierter Medical Services. Initial unterstützt die Fachanwendung ePA den *digital gestützten Medikationsprozess* (dgMP) durch die Bereitstellung einer Elektronischen Medikationsliste (eML) über einen FHIR Data Service.
 
-link:https://github.com/gematik/ePA-Medication/tree/ePA-3.0.1/concept[Medikationsprozess (Medication Service)]
+link:https://github.com/gematik/ePA-Medication/tree/ePA-3.0.2/concept[Medikationsprozess (Medication Service)]
 
 
 [#_glossar]

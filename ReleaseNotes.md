@@ -1,6 +1,18 @@
 <img align="right" width="250" height="47" src="images/Gematik_Logo_Flag_With_Background.png"/> <br/>    
  
 # Release Notes ePA Basic
+## Release 3.0.2 alpha
+- pre-release ePA-3.0.2 
+### changes
+- renamed 'challenge' to 'freshness (parameter)' and removed claims in bearer token in I_Authorization_Service.yaml (C_11806)
+- added list of notified emails in response of registerDevice in I_Device_Management_Insurant.yaml (C_11818)
+- added maximum limit of 10 mail addresses per user to I_Entitlement_Management.yaml and I_Email_Management.yaml (C_11805)
+- allowing additional pagination parameters to make navigation in the Audit Event Service more efficient
+- bugfixes in I_Test_Driver_FdV.yaml
+- bugfix regex in TelematikIdType in I_Entitlement_Management,yaml and I_Test_Driver_FdV.yaml
+- added validTo to response of setEntitlementPS in I_Entitlement_Management.yaml
+- changed path parameter insurantid to header parameter x-insurantid (C_11834)
+- removed log-entry requirement (Audit Event) from setEmail operation in I_Email_Management.yaml
 ## Release 3.0.1-1
 ### changes
 - bugfix regex UserAgentType (C_11780)

@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: I_Test_Driver_FdV
   description: REST Test Interface for the Insurant´s User Frontend (FdV)
-  version: 3.0.1
+  version: 3.0.3
   contact:
     name: gematik GmbH
     email: software-development@gematik.de
@@ -103,7 +103,7 @@ paths:
       tags:
         - XDS Document
       summary: 'Find documents, folders, submission sets in a health record'
-      description: 'This operation executes the use case "Find documents/folders" in an existing user session. By default, the health record of the user is addressed, otherwise the health record is identified by "recordId. The parameters returnType („LeafClass“ or „ObjectRef“), startIndex and maxResults are used for paging. The parameter "query" determines the Stored Query which to use. If not set, the FdV has to choose one appropriate. If the search parameters address a submission set, the response should give the meta data of the documents contained in the found submission set. The response always returns the mata data of the found documents, not the documents themselves.'
+      description: 'This operation executes the use case "Find documents/folders" in an existing user session. By default, the health record of the user is addressed, otherwise the health record is identified by recordId. Depending on the value of the returnType whole metadata (LeafClass) of found registry objects or references only (ObjectRef) should be returned. The parameters startIndex and maxResults are used for paging. The parameter "query" determines the Stored Query which to use. If not set, the FdV has to choose one appropriate.'
       operationId: findObjects_1
       requestBody:
         content:
@@ -1097,7 +1097,7 @@ components:
       required:
         - email
     ResponseDTO:
-      description: 'Return of the success status, whether the login/logout was successful or not. In any error case the status message is given.'
+      description: 'Return of the success status, whether the operation on the service interface of Health Record System was successful or not. In any error case the status message, containing the error indication (e.g. error code) is given.'
       type: object
       properties:
         success:
@@ -1785,6 +1785,11 @@ components:
           description: Liste von uniqueIds von Dokumenten
           items:
             type: string
+        XDSDocumentEntryReferenceIdList:
+          type: array
+          description: Liste von rootDocumentUniqueIds
+          items:
+            type: string
         XDSDocumentEntryClassCode:
           type: array
           items:
@@ -2059,7 +2064,7 @@ components:
       example: Z123456789
     TelematikIdType:
       type: string
-      pattern: '^[1-9][0-9]?-[\x{21}-\x{7E}]+$'
+      pattern: '^[1-9][0-9]?-[\x21-\x7E]+$'
       maxLength: 128
       example: 2-883110000118994
     OidType:
@@ -2108,7 +2113,7 @@ components:
       enum:
         - reports
         - emp
-        - nfd
+        - emergency
         - eab
         - dental
         - child
@@ -2119,6 +2124,8 @@ components:
         - care
         - eau
         - rehab
+        - diga
+        - transcripts
         - other
     Entitlement:
       description: 'Information über ein Befugnis welche eingestellt, gelöscht oder aufgelistet wird'

@@ -4,11 +4,11 @@
   "name": "EPAAuditEventSourceTypeVS",
   "id": "epa-auditevent-sourcetype-vs",
   "title": "EPAAuditEventSourceTypeVS",
+  "version": "1.0.1",
   "url": "https://gematik.de/fhir/epa/ValueSet/epa-auditevent-sourcetype-vs",
-  "version": "1.0.0",
   "experimental": false,
   "publisher": "gematik GmbH",
-  "date": "2024-01-30",
+  "date": "2024-05-31",
   "compose": {
     "include": [
       {

@@ -41,10 +41,14 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
 
-  version: 1.2.0 
+  version: 1.2.1 
 
   # version history:
   # ----------------
+  # version 1.2.1
+  #   - added limit of 10 mail addresses for representatives to setEntitlement operation (description) 
+  #   - bugfix regex TelematikIdType
+  #   - added validTo in response of setEntitlementPS
   # version 1.2.0
   #   - bugfix UserAgentType
   #   - correction in regex TelematikIdType
@@ -342,7 +346,10 @@ paths:
        Additionally a notification mail shall be send to the representative using this mail address
        for information about the new established representative role for the insurant's health record, including 
        kvnr and name of the insurant. This notification is obsolete in case the new entitlement replaces an existing
-       entitlement of the representative.
+       entitlement of the representative.<br>
+       The entitlement of a representative shall fail in case the provided notification mail address is not yet
+       associated to the representative's kvnr (case-insensitive comparison) and exceeds the
+       mail address limit (maximum: 10) of the representative. 
 
        | Conditions | Status code | Error code | Remarks |
        |------------|-------------|------------|---------|
@@ -360,6 +367,7 @@ paths:
        | request claims  _actorId_ == kvnr (_oid_ == oid_versicherter) and requestor is not insurant| 409 | requestMismatch ||
        | request claims  _actorId_ == kvnr (_oid_ == oid_versicherter) and _email_ is not in request| 409 | noMail ||
        | request claims  _validTo_ which is not equal or in the future of current date| 409 | requestMismatch ||
+       | representatives mail address exceeds representatives mail address limit | 409 | limitExceeded | if already 10 or more different mail addresses are stored for the representative |
        | Any other error | 500 | internalError | (see 'Retry interval') |
 
        </br>
@@ -588,12 +596,13 @@ paths:
        encrypted by SecureAdminStorageKey of the health record.</br>
        If the new entitlement is stored, a possibly existing entitlement is deleted automatically.</br>
        All above are success cases for this operation.
-       
-       The addressed user of the request shall be entitled after successful operation.
+       The response of the operation shall return the current _validTo_ setting as information.
 
+       The addressed user of the request shall be entitled after successful operation.
+       
        | Conditions | Status code | Error code | Remarks |
        |------------|-------------|------------|---------|
-       | Successful operation | 201 |||
+       | Successful operation | 201 || even if an existing entitlement is kept due to longer validity |
        | Request does not match schema | 400 | malformedRequest ||
        | Requestor role is not in the list of allowed usergroups | 403 | invalidOid ||
        | HSM verification failed | 403 | invalidToken ||
@@ -623,6 +632,10 @@ paths:
       responses:
         '201':
           description: Created. User is entitled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidToResponseType'
         '400':
           $ref: '#/components/responses/Error400BadRequest'
         '403':
@@ -1034,7 +1047,7 @@ components:
       example: Z123456789
     TelematikIdType:
       type: string
-      pattern: '^[1-9][0-9]?-[\x{21}-\x{7E}]+$'
+      pattern: '^[1-9][0-9]?-[\x21-\x7E]+$'
       maxLength: 128
       example: 2-883110000118994
     OidType:
@@ -1054,7 +1067,7 @@ components:
         - protected_header contains:
           - "typ": "JWT"
           - "alg": "ES256" 
-          - "x5c": signature certificate
+          - "x5c": signature certificate (C.CH.SIG)
         - payload claims:
           - "iat": issued at timestamp
           - "exp": expiry timestamp (always iat + 20min)
@@ -1080,7 +1093,7 @@ components:
           type: string
           format: application/jwt
           pattern: ^([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_\-\+\/=]+)$
-          example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsIng1YyI6ImNlcnRpZmljYXRlIn0=.eyJpYXQiOjE3NjQ1NzYwMDAsImluc3VyYW50aWQiOiJBMTIzNDU2Nzg5IiwiYWN0b3JpZCI6IjEtODgzMTEwMDAwMDkyNDA0Iiwib2lkIjoiMS4yLjI3Ni4wLjc2LjQuNTMiLCJkaXNwbGF5TmFtZSI6IktyYW5rZW5oYXVzIFN0LiBKb2hhbm5lcyIsInZhbGlkVG8iOiIyMDI1LTEyLTA3In0=.e3NpZ25hdHVyZU92ZXJIZWFkZXJBbmRQYXlsb2FkfQ=="
+          example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsIng1YyI6ImNlcnRpZmljYXRlIGMuY2guc2lnIn0.eyJpYXQiOjE3NjQ1NzYwMDAsImluc3VyYW50aWQiOiJBMTIzNDU2Nzg5IiwiYWN0b3JpZCI6IjEtODgzMTEwMDAwMDkyNDA0Iiwib2lkIjoiMS4yLjI3Ni4wLjc2LjQuNTMiLCJkaXNwbGF5TmFtZSI6IktyYW5rZW5oYXVzIFN0LiBKb2hhbm5lcyIsInZhbGlkVG8iOiIyMDI1LTEyLTA3In0.e3NpZ25hdHVyZU92ZXJIZWFkZXJBbmRQYXlsb2FkfQ"
     EntitlementRequestRepType:
       allOf:
         - $ref: '#/components/schemas/EntitlementRequestType'
@@ -1127,6 +1140,18 @@ components:
             displayName:
               $ref: '#/components/schemas/DisplayNameType'
 
+    ValidToResponseType:
+      description: validTo element of one specific entitlement
+      type: object
+      required:
+        - validTo
+      properties:
+        validTo:
+          description: End of validity
+          type: string
+          format: date-time
+          example: 2025-12-31T23:59:59+01:00
+    
     BlockedUserPolicyAssignmentType:
       description: Properties of one specific user
       type: object
@@ -1311,12 +1336,12 @@ components:
     Set_SingleEntitlementRepresentative:
       summary: Entitlement representative.
       value:
-        jwt: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsIng1YyI6ImNlcnRpZmljYXRlIn0.eyJpYXQiOjE3NjQ1NzYwMDAsImluc3VyYW50aWQiOiJYOTk5OTk5OTk5IiwiYWN0b3JpZCI6IlgxMTA0MzQzNzAiLCJvaWQiOiIxLjIuMjc2LjAuNzYuNC40OSIsImRpc3BsYXlOYW1lIjoiU2ltb24gdm9uIETDvHN0ZXJiZWhuLUhhcmRlbmJlcmdzaGF1c2VuIiwidmFsaWRUbyI6Ijk5OTktMTItMzFUMDA6MDA6MDBaIn0.e3NpZ25hdHVyZU92ZXJIZWFkZXJBbmRQYXlsb2FkfQ'
+        jwt: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsIng1YyI6ImNlcnRpZmljYXRlIGMuY2guc2lnIn0.eyJpYXQiOjE3NjQ1NzYwMDAsImluc3VyYW50aWQiOiJYOTk5OTk5OTk5IiwiYWN0b3JpZCI6IlgxMTA0MzQzNzAiLCJvaWQiOiIxLjIuMjc2LjAuNzYuNC40OSIsImRpc3BsYXlOYW1lIjoiU2ltb24gdm9uIETDvHN0ZXJiZWhuLUhhcmRlbmJlcmdzaGF1c2VuIiwidmFsaWRUbyI6Ijk5OTktMTItMzFUMDA6MDA6MDBaIn0.e3NpZ25hdHVyZU92ZXJIZWFkZXJBbmRQYXlsb2FkfQ'
         email: simon@example.com
     Set_SingleEntitlementPharmacy:
       summary: Entitlement pharmacy.
       value:
-        jwt: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsIng1YyI6ImNlcnRpZmljYXRlIn0.eyJpYXQiOjE3NjQ1NzYwMDAsImluc3VyYW50aWQiOiJYOTk5OTk5OTk5IiwiYWN0b3JpZCI6IjMtODgzMTEwMDAwMDkyNDcxIiwib2lkIjoiMS4yLjI3Ni4wLjc2LjQuNTQiLCJkaXNwbGF5TmFtZSI6IkFybWluaXVzIEFwb3RoZWtlIiwidmFsaWRUbyI6IjIwMjUtMTAtMDZUMjI6NTk6NTlaIn0.e3NpZ25hdHVyZU92ZXJIZWFkZXJBbmRQYXlsb2FkfQ'
+        jwt: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsIng1YyI6ImNlcnRpZmljYXRlIGMuY2guc2lnIn0.eyJpYXQiOjE3NjQ1NzYwMDAsImluc3VyYW50aWQiOiJYOTk5OTk5OTk5IiwiYWN0b3JpZCI6IjMtODgzMTEwMDAwMDkyNDcxIiwib2lkIjoiMS4yLjI3Ni4wLjc2LjQuNTQiLCJkaXNwbGF5TmFtZSI6IkFybWluaXVzIEFwb3RoZWtlIiwidmFsaWRUbyI6IjIwMjUtMTAtMDZUMjI6NTk6NTlaIn0.e3NpZ25hdHVyZU92ZXJIZWFkZXJBbmRQYXlsb2FkfQ'
     Response_SingleEntitlementRepresentative:
       summary: Entitlement representative.
       value:
@@ -1343,7 +1368,7 @@ components:
     Set_SingleEntitlement:
       summary: An entitlement request (dummy data).
       value:
-        jwt: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsIng1YyI6ImNlcnRpZmljYXRlIn0=.eyJpYXQiOjE3NjQ1NzYwMDAsImF1ZGl0RXZpZGVuY2UiOiJ0byBiZSBkZWZpbmVkIn0=.e3NpZ25hdHVyZU92ZXJIZWFkZXJBbmRQYXlsb2FkfQ=="
+        jwt: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsIng1YyI6ImNlcnRpZmljYXRlIGMuaGNpLmF1dCJ9.eyJpYXQiOjE3NjQ1NzYwMDAsImF1ZGl0RXZpZGVuY2UiOiJ0byBiZSBkZWZpbmVkIn0.e3NpZ25hdHVyZU92ZXJIZWFkZXJBbmRQYXlsb2FkfQ"
 
     Get_AllPolicyAssignments:
       summary: Get all Blocked User Policy assignments.
