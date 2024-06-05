@@ -35,10 +35,14 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
 
-  version: 1.1.0
+  version: 1.1.1
 
   # version history:
   # ----------------
+  # version 1.1.1
+  #   - added limit of 10 mail addresses to setEmail operation (description)
+  #   - editorial correction in operation descriptions
+  #   - removed log-entry requirement for setEmail 
   # version 1.1.0
   #   - bugfix UserAgentType
   # version 1.0.0
@@ -106,7 +110,7 @@ paths:
         | Requestor role is not _oid_versicherter_ or _oid_kostentraeger_| 403 | invalidOid ||
         | Device registration does not exist | 403 | unregisteredDevice ||
         | Missing _x-insurantid_ | 403 | invalidParam | _oid_kostentraeger_ (only) requires _x-insurantid_ |
-        | Requestor is not insurant itself or insurant hosted by insurance| 409 | requestMismatch ||
+        | Requestor is not insurant (health record owner) | 409 | requestMismatch | in case role is _oid_versicherter_ |
         | Any other error | 500 | internalError ||
 
          </br>
@@ -170,25 +174,29 @@ paths:
 
        **Provider**:</br>
        A new email address associated to the kvnr of the requestor shall be created with:
-       - timestamp _createdAt_ set to current system time
+       - timestamp _createdAt_ set to current system time.
 
-       A notification mail shall be send to this mail address of the user.
+       The maximum of 10 different mail addresses in total shall not be exceeded. The operation shall fail
+       in case this limit can not be kept.
+       Provision of an already existing mail address (case-insensitive) is a success case but no new address is created.
+
+       A notification mail shall be send to the new and all other stored mail addresses of the user.
 
        | Conditions | Status code | Error code | Remarks |
        |------------|-------------|------------|---------|
        | Successful operation | 201 |||
        | Request does not match schema | 400 | malformedRequest ||
-       | Requestor role is not _oid_versicherter_ | 403 | invalidOid ||
+       | Requestor role is not _oid_versicherter_ or _oid_kostentraeger_ | 403 | invalidOid ||
        | Device registration does not exist |403 | unregisteredDevice ||
        | Missing _x-insurantid_ | 403 | invalidParam | _oid_kostentraeger_ (only) requires _x-insurantid_ |
-       | Requestor is not insurant itself or insurant hosted by insurance| 409 | requestMismatch ||
+       | Requestor is not insurant (health record owner) | 409 | requestMismatch | in case role is _oid_versicherter_ |
+       | Provided mail address violates maximum limit | 409 | limitExceeded | if new mail address exeeds the limit of 10 different mail addresses |
        | Any other error | 500 | internalError | (see 'Retry interval') |
 
        </br>
        | Postconditions                        | Remarks |
        |---------------------------------------|---------|
        | Email notification is sent ||
-       | A log-entry for the operation exists | all operation results |
        | The raw-data of the operation is collected and associated to _useragent_ | for any operation result according to gemSpec_Perf UC_A2.2 and UC_A2.5 |
 
       requestBody:
@@ -245,7 +253,7 @@ paths:
         | Device registration does not exist |403 | unregisteredDevice ||
         | Missing _x-insurantid_ | 403 | invalidParam | _oid_kostentraeger_ (only) requires _x-insurantid_ |
         | Email (_identifier_) does not exist|404| noRessource ||
-        | Requestor is not insurant itself or insurant hosted by insurance| 409 | requestMismatch ||
+        | Requestor is not insurant (health record owner) | 409 | requestMismatch | in case role is _oid_versicherter_ |
         | Any other error | 500 | internalError | (see 'Retry interval') |
 
          </br>
@@ -300,7 +308,7 @@ paths:
         | Device registration does not exist |403 | unregisteredDevice ||
         | Missing _x-insurantid_ | 403 | invalidParam | _oid_kostentraeger_ (only) requires _x-insurantid_ |
         | Email (_identifier_) does not exist|404| noRessource ||
-        | Requestor is not insurant itself or insurant hosted by insurance| 409 | requestMismatch ||
+        | Requestor is not insurant (health record owner) | 409 | requestMismatch | in case role is _oid_versicherter_ |
         | Last (remaining) registered email address can not be deleted| 409 | onlyOneEmail ||
         | Any other error | 500 | internalError | (see 'Retry interval') |
 

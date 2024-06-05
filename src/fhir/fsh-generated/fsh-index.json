@@ -1,0 +1,82 @@
+[
+  {
+    "outputFile": "AuditEvent-669699b2-f131-4097-b13d-71413a58aa92.json",
+    "fshName": "ExampleEPAAuditEventMedicationService",
+    "fshType": "Instance",
+    "fshFile": "examples/ExampleEPAAuditEventMedicationService.fsh",
+    "startLine": 1,
+    "endLine": 36
+  },
+  {
+    "outputFile": "AuditEvent-86604fc1-b356-57e3-8738-8ef36c8d608c.json",
+    "fshName": "ExampleEPAAuditEventXDSDocumentService",
+    "fshType": "Instance",
+    "fshFile": "examples/ExampleEPAAuditEventXDSDocumentService.fsh",
+    "startLine": 1,
+    "endLine": 39
+  },
+  {
+    "outputFile": "AuditEvent-bbf292eb-665d-4724-a2bc-86fa93e89835.json",
+    "fshName": "ExampleEPAAuditEventMedicationServiceSearch",
+    "fshType": "Instance",
+    "fshFile": "examples/ExampleEPAAuditEventMedicationServiceSearch.fsh",
+    "startLine": 1,
+    "endLine": 40
+  },
+  {
+    "outputFile": "CodeSystem-epa-auditevent-sourcetype-cs.json",
+    "fshName": "EPAAuditEventSourceTypeCS",
+    "fshType": "CodeSystem",
+    "fshFile": "codesystems/EPAAuditEventSourceTypeCS.fsh",
+    "startLine": 1,
+    "endLine": 13
+  },
+  {
+    "outputFile": "StructureDefinition-epa-auditevent.json",
+    "fshName": "EPAAuditEvent",
+    "fshType": "Profile",
+    "fshFile": "profiles/EPAAuditEvent.fsh",
+    "startLine": 1,
+    "endLine": 65
+  },
+  {
+    "outputFile": "StructureDefinition-epa-operation-outcome.json",
+    "fshName": "EPAOperationOutcome",
+    "fshType": "Profile",
+    "fshFile": "profiles/EPAOperationOutcome.fsh",
+    "startLine": 1,
+    "endLine": 10
+  },
+  {
+    "outputFile": "ValueSet-epa-auditevent-sourcetype-vs.json",
+    "fshName": "EPAAuditEventSourceTypeVS",
+    "fshType": "ValueSet",
+    "fshFile": "valuesets/EPAAuditEventSourceTypeVS.fsh",
+    "startLine": 1,
+    "endLine": 6
+  },
+  {
+    "outputFile": "ValueSet-epa-auditevent-type-vs.json",
+    "fshName": "EPAAuditEventTypeVS",
+    "fshType": "ValueSet",
+    "fshFile": "valuesets/EPAAuditEventTypeVS.fsh",
+    "startLine": 1,
+    "endLine": 8
+  },
+  {
+    "outputFile": "ValueSet-epa-operation-outcome-vs.json",
+    "fshName": "EPAOperationOutcomeVS",
+    "fshType": "ValueSet",
+    "fshFile": "valuesets/EPAOperationOutcomeVS.fsh",
+    "startLine": 1,
+    "endLine": 6
+  },
+  {
+    "outputFile": "ValueSet-epa-participlationrole-type-vs.json",
+    "fshName": "EPAParticipationRoleTypeVS",
+    "fshType": "ValueSet",
+    "fshFile": "valuesets/EPAParticipationRoleTypeVS.fsh",
+    "startLine": 1,
+    "endLine": 9
+  }
+]

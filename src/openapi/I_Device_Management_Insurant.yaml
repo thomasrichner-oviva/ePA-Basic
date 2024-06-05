@@ -41,10 +41,12 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
 
-  version: 1.2.0
+  version: 1.3.0
 
   # version history:
   # ----------------
+  # version 1.3.0
+  #   - added list of notified email adresses to respponse of registerDevice
   # version 1.2.0
   #   - bugfix UserAgentType
   #   - changed http-statuscode in description of operation deleteDevice to 204  
@@ -130,9 +132,10 @@ paths:
         A client receives device identifier and device token for a new, not yet registered, device.
         Identifier and token shall be kept for subsequent operations with a health record. 
 
-        A client will then receive an email containing a confirmation code. This confirmation code 
-        shall be used to confirm the new device registration within 6 hours from registration request 
-        time on (_createdAt_, see response content).
+        A client will then receive an email containing a confirmation code. The addressed email accounts
+        are part of the operation response. 
+        This confirmation code shall be used to confirm the new device registration within 6 hours from 
+        registration request time on (_createdAt_, see response content).
 
         A client shall NOT register a new device if the user is NOT the owner of the device! This 
         applies in an "Authorize Representative" use case with a user operating on a borrowed device.
@@ -152,6 +155,7 @@ paths:
 
         An email shall be sent to all stored email addresses associated to the kvnr of the user. This email shall
         request device registration confirmation by the user and contain the confirmation code.
+        All notified email addresses shall be listed in the reponse. 
 
         The registration shall fail in case:
         - no email address of the user can be evaluated or
@@ -212,6 +216,8 @@ paths:
                     $ref: '#/components/schemas/DeviceTokenType'
                   data:
                     $ref: '#/components/schemas/PendingDeviceType'
+                  emailNotification:
+                    $ref: '#/components/schemas/EmailListType'
               examples:
                 New_Device_1:
                   summary: A new device registration
@@ -223,6 +229,8 @@ paths:
                       displayName: "my health care device"
                       createdAt: 2025-04-22T14:23:01Z
                       remainingConfirmationRetries: 4
+                    emailNotification:
+                      - myPrivateMailAccount@example.com
                 New_Device_2:
                   summary: Another new device registration
                   value:
@@ -233,7 +241,9 @@ paths:
                       displayName: "newDevice001"
                       createdAt: 2025-05-01T08:47:12Z
                       remainingConfirmationRetries: 4
-
+                    emailNotification:
+                      - myPrivateMailAccount@example.com
+                      - myAdditionalMailAccount@example.com
         '400':
           $ref: '#/components/responses/Error400BadRequest'
         '403':
@@ -804,7 +814,11 @@ components:
               description: timestamp of last login associated to the registered device
               type: string
               format: date-time
-
+    EmailListType:
+      type: array
+      items:
+        type: string
+        format: email
     ErrorType:
       description: Error object with additional information about the occurred error
       type: object

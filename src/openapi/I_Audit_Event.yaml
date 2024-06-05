@@ -115,12 +115,14 @@ paths:
         
         These include:
         - **self**: A link to the current page of results, representing the query that generated these results.
-        - **first**: Directs to the first page of search results, allowing quick navigation to the start of a result set.
-        - **last**: Takes the user to the last page of results, useful for moving to the end of a large dataset.
+        - **first**: Directs to the first page of search results, allowing quick navigation to the start of a result set. **[optional]**
+        - **last**: Takes the user to the last page of results, useful for moving to the end of a large dataset. **[optional]**
         - **next**: Used for moving forward to the next page of results, following the set pagination.
         - **previous**: Allows going back to the previous set of results, facilitating backward navigation through pages.
 
         Each link comes with a URL to fetch the corresponding set of results, dynamically generated based on the search query and pagination parameters like **_count** and **_offset**. These links simplify client navigation through large data sets by eliminating the need for manual adjustment of query parameters.
+
+        In addition to standard pagination parameters such as **_count** and **_offset**, each link may also contain other parameters that facilitate pagination within the Audit Event Service. One example is the parameter **stateid**, which represents the current state of the result list. This enables the Audit Event Service to efficiently manage navigation through the results by preserving the context or state of the search. This is particularly useful when ePA clients navigate through large or complexly structured result sets.
 
         #### **Example**:
         ```json
@@ -276,7 +278,7 @@ paths:
 
         #### **OperationOutcome**
         ##### Profile: 
-        [https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.0](https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.0)
+        [https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.1](https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.1)
 
 
       parameters:
@@ -476,7 +478,7 @@ components:
                 resourceType: OperationOutcome
                 meta:
                   profile:
-                    - https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.0
+                    - https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.1
                 issue:
                   - severity: error
                     code: processing
@@ -491,7 +493,7 @@ components:
                 resourceType: OperationOutcome
                 meta:
                   profile:
-                    - https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.0
+                    - https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.1
                 issue:
                   - severity: error
                     code: processing
@@ -506,7 +508,7 @@ components:
                 resourceType: OperationOutcome
                 meta:
                   profile:
-                    - https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.0
+                    - https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.1
                 issue:
                   - severity: error
                     code: not-supported
@@ -529,7 +531,7 @@ components:
                 resourceType: OperationOutcome
                 meta:
                   profile:
-                    - https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.0
+                    - https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.1
                 issue:
                   - severity: error
                     code: processing
@@ -544,7 +546,7 @@ components:
                 resourceType: OperationOutcome
                 meta:
                   profile:
-                    - https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.0
+                    - https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.1
                 issue:
                   - severity: error
                     code: processing
@@ -612,7 +614,7 @@ components:
               type: array
               items:
                 type: string
-                example: https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.0
+                example: https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.1
         issue:
           type: array
           items:
@@ -652,7 +654,7 @@ components:
           type: array
           items:
             type: string
-            example: https://gematik.de/fhir/epa/StructureDefinition/audit-event|1.0.0
+            example: https://gematik.de/fhir/epa/StructureDefinition/audit-event|1.0.1
 
     Resource:
       description: This is the base resource type for everything.
