@@ -35,9 +35,9 @@ end box
 
 ' Find endpoints
 opt Not required for ePA-FdV
-client -> dns : get entry for "epa4all.de"
+client -> dns : get IP-address for Aktensystem 1\nin domain "epa4all.de"
 activate dns
-dns --> client : entry "epa4all.de" \nwith endpoints for all Aktensysteme
+dns --> client : IP-address
 deactivate dns
 end
 

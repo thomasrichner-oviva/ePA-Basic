@@ -13,6 +13,7 @@
 - added validTo to response of setEntitlementPS in I_Entitlement_Management.yaml
 - changed path parameter insurantid to header parameter x-insurantid (C_11834)
 - removed log-entry requirement (Audit Event) from setEmail operation in I_Email_Management.yaml
+- update chapter 4 "Aktenlokalisierung und Login" in concept.adoc
 ## Release 3.0.1-1
 ### changes
 - bugfix regex UserAgentType (C_11780)

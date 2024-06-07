@@ -317,12 +317,12 @@ endif::[]
 
 === Lokalisierung der Service-Endpunkte der ePA
 
-Die Endpunkte der verschiedenen Aktensysteme erfahren ePA-Clients (nicht das ePA-FdV) über die DNS Service Discovery (DNS-SD) für eine übergreifende Domäne (epa4all.de) entweder über den DNS Resolver des Konnektors oder den konfigurierten DNS Resolver für das Internet. Hinterlegt sind dort alle Service-Endpunkte in der Telematikinfrastruktur (TI) für die verschiedenen Aktensysteme. Die DNS-SD wird durch den entsprechenden ePA-Client einmal täglich abgefragt.
+Die FQDN der verschiedenen Aktensysteme in der übergreifenden Domäne *epa4all.de* sind fest vorgegeben und den ePA-Clients bekannt. Sie werden durch die ePA-Clients (nicht das ePA-FdV) entweder über den DNS Resolver des Konnektors oder den konfigurierten DNS Resolver für das Internet aufgelöst, welche beide IP-Adressen im zentralen Netz der TI liefern. Die Service-Endpunkte innerhalb eines Aktensystems werden über die Schnittstellen vorgegeben.
 
 
 === Lokalisierung der Akte eines Versicherten
 
-Die ePA-Clients (Primärsystem, ePA-FdV, E-Rezept-Fachdienst oder auch ein Clientsystem der Kostenträger (KTR) oder der Ombudsstelle) halten den ermittelten zuständigen Service-Endpunkt für eine Akte vor. Sollte diese Information nicht im ePA-Client vorliegen, wendet sich der ePA-Client an den *Information Service*, um dort nach der Akte zu fragen und wenn dort für die gegebene Krankenversicherungsnummer (KVNR) eine Akte existiert den Service-Endpunkt lokal zu speichern. Ist keine Akte auf diesem Aktensystem vorhanden, erfolgt die Abfrage am anderen Aktensystem.
+Die ePA-Clients (Primärsystem, ePA-FdV, E-Rezept-Fachdienst oder auch ein Clientsystem der Kostenträger (KTR) oder der Ombudsstelle) halten den ermittelten zuständigen Service-Endpunkt für eine Akte vor. Sollte diese Information nicht im ePA-Client vorliegen, wendet sich der ePA-Client an den *Information Service* eines Aktensystems, um dort nach der Akte zu fragen und wenn dort für die gegebene Krankenversicherungsnummer (KVNR) eine Akte existiert den Service-Endpunkt lokal zu speichern. Ist keine Akte auf diesem Aktensystem vorhanden, erfolgt die Abfrage am anderen Aktensystem.
 
 Kennt kein Aktensystem die Akte, hat der Versicherte der Bereitstellung einer ePA widersprochen und es existiert keine Akte.
 
