@@ -41,10 +41,16 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
 
-  version: 1.2.1 
+  version: 1.2.3
 
   # version history:
   # ----------------
+  # version 1.2.3
+  #   - paging and filtering deleted
+  #   - removed limit of 10 mail addresses for representatives to setEntitlement operation
+  #   - no correlation to email address provided by insurance
+  # version 1.2.2
+  #   - changed pattern for jwts of EntitlementRequestType
   # version 1.2.1
   #   - added limit of 10 mail addresses for representatives to setEntitlement operation (description) 
   #   - bugfix regex TelematikIdType
@@ -192,11 +198,6 @@ paths:
       - $ref: '#/components/parameters/insurantid'
       - $ref: '#/components/parameters/useragent'
     get:
-      parameters:
-        - $ref: '#/components/parameters/actor-id'
-        - $ref: '#/components/parameters/oid'
-        - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/offset'
       tags:
         - Entitlements-ePA-FdV
       operationId: getEntitlements
@@ -205,29 +206,13 @@ paths:
         Get a list of actual granted entitlements of the health record.</br>
         This operation is limited to entitled users of role oid_versicherter.
 
-        **Client**:</br>
-        A client shall consider the schema for 'Queries' and 'Paging'.
-
         **Provider**:</br>
-        The returned list shall contain only entitlements not expired (_validTo_) and matching the query parameters.</br>
+        The returned list shall contain only entitlements not expired (_validTo_).</br>
 
         The operation shall NOT consider the static entitlements for a response (even if stored
         in SecureAdminStorage).
 
-        Paging:</br>
-        _offset_ and _limit_ parameters shall be related to the amount of entitlements matching the query and only occur 
-        once in a request. Default shall be for _offset_ = 0 and for _limit_ = 50 (this shall also be the maximum _limit_).
-        The applied _offset_ and _limit_ and the total amount of matching entitlements shall be part of the response.</br>
-        _offset_ shall be a "page-offset" and is related to _limit_ which is the "page-size", e.g. if total amount of 
-        matching entitlements is 75, than _offset_ = 0 with _limit_ = 40 return result 1 to 40 and _offset_ = 1 with _limit_ 
-        = 40 return result 41 to 75 and _offset_ = 2 with _limit_ = 40 return an 'empty' result.  
-        
-        Queries:</br>
-        Different query parameter (name) shall be applied as logical AND, multiple query strings (same name) 
-        as OR. Default for all query parameters is ('*').
-        Queries for _userrole_ shall use the numeric, symbolic oid (e.g. 1.2.276.0.76.4.49 instead of 'oid_versicherter').</br>
-
-        | Conditions | Status code | Error code | Remarks |
+         | Conditions | Status code | Error code | Remarks |
         |------------|-------------|------------|---------|
         | Successful operation | 200 |||
         | Request does not match schema | 400 | malformedRequest ||
@@ -244,24 +229,12 @@ paths:
 
       responses:
         '200':
-          description: OK. Returns a list of all entitlements (matching the query)
+          description: OK. Returns a list of all entitlements
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  query:
-                    type: object
-                    properties:
-                      offset:
-                        description: applied offset to matching results
-                        type: integer
-                      limit:
-                        description: applied limit to matching results
-                        type: integer
-                      totalMatching:
-                        description: total amount of matching results in policies
-                        type: integer
                   data:
                     type: array
                     items:
@@ -270,12 +243,6 @@ paths:
               examples:
                 getAll:
                   $ref: '#/components/examples/Get_AllEntitlements'
-                getAll_offset_limit:
-                  $ref: '#/components/examples/Get_AllEntitlements_offset_limit'
-                FilterUserId:
-                  $ref: '#/components/examples/Get_EntitlementsQueryForTID'
-                FilterUserRole:
-                  $ref: '#/components/examples/Get_EntitlementsQueryForRole'
         '400':
           $ref: '#/components/responses/Error400BadRequest'
         '403':
@@ -347,9 +314,6 @@ paths:
        for information about the new established representative role for the insurant's health record, including 
        kvnr and name of the insurant. This notification is obsolete in case the new entitlement replaces an existing
        entitlement of the representative.<br>
-       The entitlement of a representative shall fail in case the provided notification mail address is not yet
-       associated to the representative's kvnr (case-insensitive comparison) and exceeds the
-       mail address limit (maximum: 10) of the representative. 
 
        | Conditions | Status code | Error code | Remarks |
        |------------|-------------|------------|---------|
@@ -367,7 +331,6 @@ paths:
        | request claims  _actorId_ == kvnr (_oid_ == oid_versicherter) and requestor is not insurant| 409 | requestMismatch ||
        | request claims  _actorId_ == kvnr (_oid_ == oid_versicherter) and _email_ is not in request| 409 | noMail ||
        | request claims  _validTo_ which is not equal or in the future of current date| 409 | requestMismatch ||
-       | representatives mail address exceeds representatives mail address limit | 409 | limitExceeded | if already 10 or more different mail addresses are stored for the representative |
        | Any other error | 500 | internalError | (see 'Retry interval') |
 
        </br>
@@ -653,11 +616,6 @@ paths:
       - $ref: '#/components/parameters/insurantid'
       - $ref: '#/components/parameters/useragent'
     get:
-      parameters:
-        - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/offset'
-        - $ref: '#/components/parameters/telematik-id'
-        - $ref: '#/components/parameters/oid'
       tags:
         - UserBlocking
       operationId: getBlockedUserPolicyAssignments
@@ -666,21 +624,8 @@ paths:
         Get a list of actual set assignments of the blocked user policy.</br>
         This operation is limited to entitled users of role oid_versicherter and oid_ombudsstelle.
 
-        **Client**:</br>
-        A client shall consider the schema for 'Queries' and 'Paging' (see below).
-
         **Provider**:</br>
-        The returned list shall contain only assignments of the blocked user policy matching the query parameters.</br>
-        Different query parameter (name) shall be applied as logical AND, multiple query strings (same name) 
-        as OR. Default for all query parameters is ('*').
-
-        Paging:</br>
-        _offset_ and _limit_ parameters shall be related to the amount of assignments matching the query. 
-        Default shall be for _offset_ = 0 and for _limit_ = 50 (this shall also be the maximum _limit_).
-        The applied _offset_ and _limit_ and the total amount of matching assignments shall be part of the response.</br>
-        _offset_ shall be a "page-offset" and is related to _limit_ which is the "page-size", e.g. if total amount of 
-        matching assignments is 75, than _offset_ = 0 with _limit_ = 40 return result 1 to 40 and _offset_ = 1 with _limit_ 
-        = 40 return result 41 to 75 and _offset_ = 2 with _limit_ = 40 return an 'empty' result.  
+        The returned list shall contain only all assignments of the blocked user policy.</br>
         
         | Conditions | Status code | Error code | Remarks |
         |------------|-------------|------------|---------|
@@ -705,18 +650,6 @@ paths:
               schema:
                 type: object
                 properties:
-                  query:
-                    type: object
-                    properties:
-                      offset:
-                        description: applied offset to matching results
-                        type: integer
-                      limit:
-                        description: applied limit to matching results
-                        type: integer
-                      totalMatching:
-                        description: total amount of matching results in policy
-                        type: integer
                   assignments:
                     type: array
                     items:
@@ -725,12 +658,6 @@ paths:
               examples:
                 getAll:
                   $ref: '#/components/examples/Get_AllPolicyAssignments'
-                getAllOffsetLimit:
-                  $ref: '#/components/examples/Get_AllPolicyAssignments_offset_limit'
-                FilterTID:
-                  $ref: '#/components/examples/Get_QueryForTID'
-                FilterOid:
-                  $ref: '#/components/examples/Get_QueryForRole'
         '400':
           $ref: '#/components/responses/Error400BadRequest'
         '403':
@@ -1000,40 +927,6 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/TelematikIdType'
-    actor-id:
-      name: actor-id
-      description:  Query for a specific identifier (kvnr or telematik-id)
-      in: query
-      required: false
-      schema:
-        $ref: '#/components/schemas/ActorIdType'
-    oid:
-      name: oid
-      description: role (oid) for query
-      in: query
-      required: false
-      schema:
-        $ref: '#/components/schemas/OidType'
-    limit:
-      name: limit
-      in: query
-      description: Limits the number of matching items in a response ('pagesize', default and max = 50).
-      schema:
-        type: integer
-        maximum: 50
-        minimum: 1
-    offset:
-      name: offset
-      in: query
-      description: Specifies skipped matching pages ('pagesize' == limit), (default = 0).
-      schema:
-        type: integer
-    telematik-id:
-      name: tid
-      in: query
-      description: Query for a specific telematik-id
-      schema:
-        $ref: '#/components/schemas/TelematikIdType'
 
   schemas:
     ActorIdType:
@@ -1092,8 +985,8 @@ components:
         jwt:
           type: string
           format: application/jwt
-          pattern: ^([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_\-\+\/=]+)$
-          example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsIng1YyI6ImNlcnRpZmljYXRlIGMuY2guc2lnIn0.eyJpYXQiOjE3NjQ1NzYwMDAsImluc3VyYW50aWQiOiJBMTIzNDU2Nzg5IiwiYWN0b3JpZCI6IjEtODgzMTEwMDAwMDkyNDA0Iiwib2lkIjoiMS4yLjI3Ni4wLjc2LjQuNTMiLCJkaXNwbGF5TmFtZSI6IktyYW5rZW5oYXVzIFN0LiBKb2hhbm5lcyIsInZhbGlkVG8iOiIyMDI1LTEyLTA3In0.e3NpZ25hdHVyZU92ZXJIZWFkZXJBbmRQYXlsb2FkfQ"
+          pattern: ^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$
+          example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsIng1YyI6ImNlcnRpZmljYXRlIGMuY2guc2lnIn0.eyJpYXQiOjE3NjQ1NzYwMDAsImV4cCI6MTc2NDU3NzIwMCwiaW5zdXJhbnRpZCI6IkExMjM0NTY3ODkiLCJhY3RvcmlkIjoiMS04ODMxMTAwMDAwOTI0MDQiLCJvaWQiOiIxLjIuMjc2LjAuNzYuNC41MyIsImRpc3BsYXlOYW1lIjoiS3JhbmtlbmhhdXMgU3QuIEpvaGFubmVzIiwidmFsaWRUbyI6IjIwMjUtMTItMDcifQ.e3NpZ25hdHVyZU92ZXJIZWFkZXJBbmRQYXlsb2FkfQ"
     EntitlementRequestRepType:
       allOf:
         - $ref: '#/components/schemas/EntitlementRequestType'
@@ -1208,10 +1101,6 @@ components:
     Get_AllEntitlements:
       summary: Get all Entitlements.
       value:
-        query:
-          offset: 0
-          limit: 50
-          totalMatching: 7
         data:
           - actorId: 2-883110000092419
             oid: 1.2.276.0.76.4.51
@@ -1269,79 +1158,15 @@ components:
               at: 2025-01-01T23:00:00Z
               actorId: X999999999
               displayName: 'Name of health record owner'
-    Get_AllEntitlements_offset_limit:
-      summary: Get all Entitlements with set offset=1 and limit=2 .
-      value:
-        query:
-          offset: 1
-          limit: 2
-          totalMatching: 7
-        data:
-          - actorId: 2-883110000092417
-            oid: 1.2.276.0.76.4.51
-            displayName: 'Zahnarztpraxis Dr. Marie-Ella Blankenbergç'
-            validTo: 2025-11-01T22:59:59Z
-            issued:
-              at: 2025-10-03T14:02:00Z
-              actorId: X999999999
-              displayName: 'Name of health record owner'
-          - actorId: 3-883110000092471
-            oid: 1.2.276.0.76.4.54
-            displayName: 'Arminius Apotheke'
-            validTo: 2025-10-06T22:59:59Z
-            issued:
-              at: 2025-10-04T14:03:00Z
-              actorId: X999999999
-              displayName: 'Name of health record owner'
-    Get_EntitlementsQueryForTID:
-      summary: Get Entitlement for telematik-id 3-883110000092471.
-      value:
-        query:
-          offset: 0
-          limit: 50
-          totalMatching: 1
-        data:
-          - actorId: 3-883110000092471
-            oid: 1.2.276.0.76.4.54
-            displayName: 'Arminius Apotheke'
-            validTo: 2025-10-06T22:59:59Z
-            issued:
-              at: 2025-10-04T14:03:00Z
-              actorId: X999999999
-              displayName: 'Name of health record owner'
-    Get_EntitlementsQueryForRole:
-      summary: Get Entitlement for oid_oeffentliche_apotheke (1.2.276.0.76.4.54).
-      value:
-        query:
-          offset: 0
-          limit: 50
-          totalMatching: 2
-        data:
-          - actorId: 3-883110000092471
-            oid: 1.2.276.0.76.4.54
-            displayName: 'Arminius Apotheke'
-            validTo: 2025-10-06T22:59:59Z
-            issued:
-              at: 2025-10-04T14:03:00Z
-              actorId: X999999999
-              displayName: 'Name of health record owner'
-          - actorId: 3-88311000009248
-            oid: 1.2.276.0.76.4.54
-            displayName: 'Paracelsius Apotheke'
-            validTo: 2025-10-08T22:59:59Z
-            issued:
-              at: 2025-10-06T14:05:00Z
-              actorId: X110434370
-              displayName: 'Simon von Düsterbehn-Hardenbergshausen'
     Set_SingleEntitlementRepresentative:
       summary: Entitlement representative.
       value:
-        jwt: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsIng1YyI6ImNlcnRpZmljYXRlIGMuY2guc2lnIn0.eyJpYXQiOjE3NjQ1NzYwMDAsImluc3VyYW50aWQiOiJYOTk5OTk5OTk5IiwiYWN0b3JpZCI6IlgxMTA0MzQzNzAiLCJvaWQiOiIxLjIuMjc2LjAuNzYuNC40OSIsImRpc3BsYXlOYW1lIjoiU2ltb24gdm9uIETDvHN0ZXJiZWhuLUhhcmRlbmJlcmdzaGF1c2VuIiwidmFsaWRUbyI6Ijk5OTktMTItMzFUMDA6MDA6MDBaIn0.e3NpZ25hdHVyZU92ZXJIZWFkZXJBbmRQYXlsb2FkfQ'
+        jwt: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsIng1YyI6ImNlcnRpZmljYXRlIGMuY2guc2lnIn0.eyJpYXQiOjE3NjQ1NzYwMDAsImV4cCI6MTc2NDU3NzIwMCwiaW5zdXJhbnRpZCI6Ilg5OTk5OTk5OTkiLCJhY3RvcmlkIjoiWDExMDQzNDM3MCIsIm9pZCI6IjEuMi4yNzYuMC43Ni40LjQ5IiwiZGlzcGxheU5hbWUiOiJTaW1vbiB2b24gRMO8c3RlcmJlaG4tSGFyZGVuYmVyZ3NoYXVzZW4iLCJ2YWxpZFRvIjoiOTk5OS0xMi0zMVQwMDowMDowMFoifQ.e3NpZ25hdHVyZU92ZXJIZWFkZXJBbmRQYXlsb2FkfQ'
         email: simon@example.com
     Set_SingleEntitlementPharmacy:
       summary: Entitlement pharmacy.
       value:
-        jwt: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsIng1YyI6ImNlcnRpZmljYXRlIGMuY2guc2lnIn0.eyJpYXQiOjE3NjQ1NzYwMDAsImluc3VyYW50aWQiOiJYOTk5OTk5OTk5IiwiYWN0b3JpZCI6IjMtODgzMTEwMDAwMDkyNDcxIiwib2lkIjoiMS4yLjI3Ni4wLjc2LjQuNTQiLCJkaXNwbGF5TmFtZSI6IkFybWluaXVzIEFwb3RoZWtlIiwidmFsaWRUbyI6IjIwMjUtMTAtMDZUMjI6NTk6NTlaIn0.e3NpZ25hdHVyZU92ZXJIZWFkZXJBbmRQYXlsb2FkfQ'
+        jwt: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsIng1YyI6ImNlcnRpZmljYXRlIGMuY2guc2lnIn0.eyJpYXQiOjE3NjQ1NzYwMDAsImV4cCI6MTc2NDU3NzIwMCwiaW5zdXJhbnRpZCI6Ilg5OTk5OTk5OTkiLCJhY3RvcmlkIjoiMy04ODMxMTAwMDAwOTI0NzEiLCJvaWQiOiIxLjIuMjc2LjAuNzYuNC41NCIsImRpc3BsYXlOYW1lIjoiQXJtaW5pdXMgQXBvdGhla2UiLCJ2YWxpZFRvIjoiMjAyNS0xMC0wNlQyMjo1OTo1OVoifQ.e3NpZ25hdHVyZU92ZXJIZWFkZXJBbmRQYXlsb2FkfQ'
     Response_SingleEntitlementRepresentative:
       summary: Entitlement representative.
       value:
@@ -1368,15 +1193,11 @@ components:
     Set_SingleEntitlement:
       summary: An entitlement request (dummy data).
       value:
-        jwt: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsIng1YyI6ImNlcnRpZmljYXRlIGMuaGNpLmF1dCJ9.eyJpYXQiOjE3NjQ1NzYwMDAsImF1ZGl0RXZpZGVuY2UiOiJ0byBiZSBkZWZpbmVkIn0.e3NpZ25hdHVyZU92ZXJIZWFkZXJBbmRQYXlsb2FkfQ"
+        jwt: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsIng1YyI6ImNlcnRpZmljYXRlIGMuaGNpLmF1dCJ9.eyJpYXQiOjE3NjQ1NzYwMDAsImV4cCI6MTc2NDU3NzIwMCwiYXVkaXRFdmlkZW5jZSI6InRvIGJlIGRlZmluZWQifQ.e3NpZ25hdHVyZU92ZXJIZWFkZXJBbmRQYXlsb2FkfQ"
 
     Get_AllPolicyAssignments:
       summary: Get all Blocked User Policy assignments.
       value:
-        query:
-          offset: 0
-          limit: 50
-          totalMatching: 4
         data:
           - actorId: 2-883110000092414
             oid: 1.2.276.0.76.4.51
@@ -1394,50 +1215,6 @@ components:
             oid: 1.2.276.0.76.4.54
             displayName: 'Süd Apotheke'
             at: 2025-07-04T12:00:00Z
-    Get_AllPolicyAssignments_offset_limit:
-      summary: Get all Blocked User with set offset and limit.
-      value:
-        query:
-          offset: 1
-          limit: 2
-          totalMatching: 4
-        data:
-          - actorId: 2-883110000092427
-            oid: 1.2.276.0.76.4.51
-            displayName: 'Zahnarztpraxis Dr. Alfons Adamiç'
-            at: 2025-07-03T12:00:00Z
-          - actorId: 3-883110000092469
-            oid: 1.2.276.0.76.4.54
-            displayName: 'Süd Apotheke'
-            at: 2025-07-04T12:00:00Z
-    Get_QueryForTID:
-      summary: Get Blocked User for telematik-id 1-883110000092404.
-      value:
-        query:
-          offset: 0
-          limit: 50
-          totalMatching: 1
-        data:
-          - actorId: 1-883110000092404
-            oid: 1.2.276.0.76.4.50
-            displayName: 'Praxis Dr. Annamaria Heckhausén'
-            at: 2025-07-02T12:00:00Z
-    Get_QueryForRole:
-      summary: Get Blocked User for oid oid_zahnarztpraxis.
-      value:
-        query:
-          offset: 0
-          limit: 50
-          totalMatching: 2
-        data:
-          - actorId: 2-883110000092414
-            oid: 1.2.276.0.76.4.51
-            displayName: 'Zahnarztpraxis Norbert Freiherr Schomaker'
-            at: 2025-07-01T12:00:00Z
-          - actorId: 2-883110000092427
-            oid: 1.2.276.0.76.4.51
-            displayName: 'Zahnarztpraxis Dr. Alfons Adamiç'
-            at: 2025-07-03T12:00:00Z
     Set_SinglePolicyAssignment:
       summary: Set Blocked User for 2-883110000092427.
       value:

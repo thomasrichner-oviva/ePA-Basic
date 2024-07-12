@@ -28,7 +28,8 @@ endif::[]
 === Device Management
 
 Damit Versicherte bzw. Vertreter Zugang zum einem Aktenkonto erhalten, muss das
-Gerät des verwendeten ePA-FdV zuerst registriert und bestätigt werden. Für jedes Login ist die Verifkation  eines registrierten Gerätes notwendig. Wird ein Login-Versuch mit einem nicht verifzierten Gerät unternommen, verhindert das ePA-Aktensystem die Nutzung eines Aktenkontos
+Gerät des verwendeten ePA-FdV zuerst registriert und bestätigt werden. Für jedes Login ist die Verifkation eines registrierten Gerätes notwendig. Wird ein Login-Versuch mit einem nicht verifzierten Gerät unternommen, verhindert das ePA-Aktensystem die Nutzung eines Aktenkontos.
+Die Verwaltung eines Gerätes erfolgt immer auf dem Aktensystem, das vom Kostenträger des Nutzers angeboten wird, auch wenn der Nutzer selbst aufgrund seines Widerspruchs kein eigenes Aktenkonto besitzt. Im Fall eines Zugriffs als Vertreter auf ein anderes Aktensystem, attestiert das verwaltende Aktensystem das verifizierte Gerät gegenüber dem genutzten Aktensystem.
 
 
 ==== Geräteregistierung und -verifizierung

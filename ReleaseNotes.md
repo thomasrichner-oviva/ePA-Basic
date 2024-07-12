@@ -1,7 +1,19 @@
 <img align="right" width="250" height="47" src="images/Gematik_Logo_Flag_With_Background.png"/> <br/>    
  
 # Release Notes ePA Basic
-## Release 3.0.2 alpha
+## Release 3.0.2
+- release ePA-3.0.2
+### changes
+- changed regex for pattern of jwts (now for base64url only) (C_11878)
+- added statuscode 403 (invalidAuth) for getFHIRVZDToken in I_Authorization_Service.yaml (C_11879)
+- added timestamp in response of getGeneralConsentDecision in I_Information_Service_Accounts.yaml (C_11884) 
+- fixed the EPAParticipationRoleType ValueSet
+- I_Test_Driver_FdV.yaml moved to: https://github.com/gematik/api-ePA-Testtreiber
+- added tutorials
+- reduced maximum amount of email addresses per user to 1, including change of all releated operations, in I_Email_Management.yaml (C_11885)
+- added authorization with device attestation for sendAuthCodeFdv in I_Authorization_Service.yaml (C_11885)
+- removed paging and filtering in I_Email_Management.yaml, I_Entitlement_Management_Insurant.yaml and I_Device_Management.yaml m(C_11912)
+## Release 3.0.2 alpha 
 - pre-release ePA-3.0.2 
 ### changes
 - renamed 'challenge' to 'freshness (parameter)' and removed claims in bearer token in I_Authorization_Service.yaml (C_11806)

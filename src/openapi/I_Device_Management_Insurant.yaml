@@ -41,10 +41,13 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
 
-  version: 1.3.0
+  version: 1.4.0
 
   # version history:
   # ----------------
+  # version 1.4.0
+  #   - reworked for use of deviceAttestation
+  #   - paging and filtering deleted
   # version 1.3.0
   #   - added list of notified email adresses to respponse of registerDevice
   # version 1.2.0
@@ -66,7 +69,19 @@ servers:
 tags:
 - name: DeviceManagement
   description: |
-    **Device Management** allows a user to manage and use all devices registered to the user's kvnr.
+    **Device Management**
+    Manegement of devices takes place beside an health record and is also possible for insurants
+    which do not want to use the ePA at all (i.e. generalConsentDecision is 'false')
+
+    The devices of an insurant are always and only managed in the health record system associated
+    to the insurant ("home health record system" or "home system"), i.e. the health record system 
+    hosting the insurance of the insurant.
+
+    The device registration in a home system can still be used in another system, for example in
+    a role as representative for an insurant hosted by another system.  
+
+    **Device Management (home system)** allows a user to manage and use all devices 
+    registered to the user's kvnr.
 
     A confirmed device registration is always required for any device with installed ePA-FdV 
     used to access health record content. An unregistered (i.e. new) or not confirmed device 
@@ -105,14 +120,29 @@ tags:
 
 
     Device management automatically deletes existing device registrations when: 
-    - device registration (creation time) is more than 2 years old or
+    - device registration (creation time) is more than 1 year old or
     - device registration is pending and confirmation code for confirmation is not submitted within 6 hours or
     - device registration is pending and a wrong confirmation code was submitted 5 times in a row
 
     If a device registration is deleted (i.e. does not exist any longer) a new device registration 
     process shall be started by a client for further use of the (now deregistered) device. 
 
- 
+    **Access to systems other than home system**
+    
+    As Device Management only takes places in the home system, no device can be registered by an 
+    insurant with other systems.
+    Nonetheless, a successful login to a system (any) requires a confirmed device registration.
+
+    Therefore the device registration of the home system is used for login to another system. As proof 
+    of a valid and confirmed device registration, the home system issues a **Device Attestation** for a device.
+    This attestation is accepted by other systems and acts like a registration made by the other system itself. 
+
+    A device attestation shall be used during login to the other system (sendAuthCodeFdV in I_Authorization_Service)
+    instead of the deviceToken and deviceIdentifier as used with the home system.
+
+    Deviating from the behaviour of the home system which persists a confirmed device registration, is a device attestation
+    only temporarily valid within a single user session, i.e. a new device attestation shall be retrieved from the home system
+    for any new login to another system.
 
 paths:
   /epa/basic/api/v1/devices/manage:
@@ -137,6 +167,8 @@ paths:
         This confirmation code shall be used to confirm the new device registration within 6 hours from 
         registration request time on (_createdAt_, see response content).
 
+        A client shall not invoke this operation on a health record system other than the home health record system.
+
         A client shall NOT register a new device if the user is NOT the owner of the device! This 
         applies in an "Authorize Representative" use case with a user operating on a borrowed device.
 
@@ -153,11 +185,12 @@ paths:
         If no _deviceName_ is provided, a generic but among the kvnr associated devices unique 
         device name shall be applied (e.g "newDevice001")."
 
-        An email shall be sent to all stored email addresses associated to the kvnr of the user. This email shall
+        An email shall be sent to the stored email address associated to the kvnr of the user. This email shall
         request device registration confirmation by the user and contain the confirmation code.
-        All notified email addresses shall be listed in the reponse. 
+        The notified email address shall be listed in the reponse. 
 
         The registration shall fail in case:
+        - it is not the "home system" of the user
         - no email address of the user can be evaluated or
         - too many failed attempts for registration occur in the past
           - 3 consecutive failed device registrations were requested for the kvnr of the user within a period of 8 hours and
@@ -170,7 +203,7 @@ paths:
         A failed device registration is evident in case a not yet confirmed device registration is deleted,
         either caused by an expired confirmation code or by too many failed attempts for confirmation.
 
-        Device identifier and -token shall be persisted associated to the kvnr. The kvnr shall never be persistet in plain
+        Device identifier and -token shall be persisted associated to the kvnr. The kvnr shall never be persisted in plain
         text but must be stored pseudonymously.
 
         | Conditions | Status code | Error code | Remarks |
@@ -179,6 +212,7 @@ paths:
         | Request does not match schema | 400 | malformedRequest ||
         | Requestor role is not _oid_versicherter_ | 403 | invalidOid ||
         | Requestor is in "Authorize Representative" use case| 403 | invalidRequest ||
+        | Not the "home system" of the user | 404| notHomeSystem ||
         | Mail address of user is not available | 404| noResource ||
         | Device registration temporarily not allowed | 409 | statusMismatch | errorDetail shall contain end of waiting time |
         | Any other error | 500 | internalError | (see 'Retry interval') |
@@ -217,7 +251,7 @@ paths:
                   data:
                     $ref: '#/components/schemas/PendingDeviceType'
                   emailNotification:
-                    $ref: '#/components/schemas/EmailListType'
+                    $ref: '#/components/schemas/EmailAddressType'
               examples:
                 New_Device_1:
                   summary: A new device registration
@@ -243,7 +277,6 @@ paths:
                       remainingConfirmationRetries: 4
                     emailNotification:
                       - myPrivateMailAccount@example.com
-                      - myAdditionalMailAccount@example.com
         '400':
           $ref: '#/components/responses/Error400BadRequest'
         '403':
@@ -385,10 +418,6 @@ paths:
     parameters:
       - $ref: '#/components/parameters/useragent'
     get:
-      parameters:
-        - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/offset'
-        - $ref: '#/components/parameters/devicestatus'
       tags:
         - DeviceManagement
       operationId: getDevices
@@ -399,19 +428,11 @@ paths:
         is not required.
 
         **Client**:</br>
-        A client shall consider the schema for 'Paging' (see below).
+        no recommendations
 
         **Provider**:</br>
-        The returned list shall contain only device registrations matching the query parameters.
+        The returned list shall contain all device registrations.
 
-        Paging:</br>
-        _offset_ and _limit_ parameters shall be related to the amount of assignments matching the query and only occure 
-        once in a request. Default shall be for _offset_ = 0 and for _limit_ = 50 (this shall also be the maximum _limit_).
-        The applied _offset_ and _limit_ and the total amount of matching assignments shall be part of the response.</br>
-        _offset_ shall be a "page-offset" and is related to _limit_ which is the "page-size", e.g. if total amount of 
-        matching assignments is 75, than _offset_ = 0 with _limit_ = 40 return result 1 to 40 and _offset_ = 1 with _limit_ 
-        = 40 return result 41 to 75 and _offset_ = 2 with _limit_ = 40 return an 'empty' result.  
-        
         | Conditions | Status code | Error code | Remarks |
         |------------|-------------|------------|---------|
         | Successful operation | 200 |||
@@ -432,21 +453,6 @@ paths:
               schema:
                 type: object
                 properties:
-                  query:
-                    type: object
-                    properties:
-                      offset:
-                        description: applied offset to matching results
-                        type: integer
-                        example: 0
-                      limit:
-                        description: applied limit to matching results
-                        type: integer
-                        example: 25
-                      totalMatching:
-                        description: total amount of matching results in policies
-                        type: integer
-                        example: 1
                   data:
                     type: array
                     items:
@@ -455,10 +461,6 @@ paths:
               examples:
                 GetAllDevices:
                   value:
-                    query:
-                      offset: 0
-                      limit: 25
-                      totalMatching: 4
                     data:
                       - deviceIdentifier: '549230be-9bfa-4e49-81bb-1e928c37274c'
                         status: confirmed
@@ -475,18 +477,6 @@ paths:
                         displayName: "my old android phone"
                         createdAt: 2025-02-01T12:00:00Z
                         lastUse: 2025-07-31T12:00:00Z
-                      - deviceIdentifier: 'c310d761-d49d-484c-b3d8-736a90e12832'
-                        status: pending
-                        displayName: "newDevice001"
-                        createdAt: 2025-12-24T20:00:00Z
-                        remainingConfirmationRetries: 3
-                GetPendingDevices:
-                  value:
-                    query:
-                      offset: 0
-                      limit: 25
-                      totalMatching: 1
-                    data:
                       - deviceIdentifier: 'c310d761-d49d-484c-b3d8-736a90e12832'
                         status: pending
                         displayName: "newDevice001"
@@ -669,6 +659,61 @@ paths:
         '500':
           $ref: '#/components/responses/Error500InternalError'
 
+  /epa/basic/api/v1/devices/attestation:
+    parameters:
+      - $ref: '#/components/parameters/useragent'
+    get:
+      tags:
+        - DeviceManagement
+      operationId: getDeviceAttestation
+      summary: (getDeviceAttestation) Get an attestation for the current used device.
+      description: |
+        Retrieves the attestation for the current device in use.</br>
+        The device attestation is a signed JWT claiming the kvnr using the identity of VAU of the home health record system.
+        Device attestation can only be retrieved from the home health record system of the requesting user.</br> 
+        This operation is limited to users of role oid_versicherter. An entitlement 
+        is not required.
+
+        **Client**:</br>
+        A client shall not invoke this operation on a health record system other than the home health record system.
+        A client shall use the device attestation for a login to a health record system other than the home 
+        health record system.
+
+        **Provider**</br>
+        The operation shall fail if it is not the user's home system. 
+        providing the operation, i.e. the requesting user is not known to the device management. 
+        
+        
+        | Conditions | Status code | Error code | Remarks |
+        |------------|-------------|------------|---------|
+        | Successful operation | 200 |||
+        | Request does not match schema | 400 | malformedRequest ||
+        | Requestor role is not _oid_versicherter_ | 403 | invalidOid ||
+        | Requestor _kvnr_ is not known to the device management | 403 | invalidUser | user has no device registered or is not known at all |
+        | Device registration (_deviceidentifier_) does not exist | 404 | noResource | also if device is not associated to requestor kvnr |
+        | Any other error | 500 | internalError | (see 'Retry interval') |
+
+         </br>
+        | Postconditions                        | Remarks |
+        |---------------------------------------|---------|
+        | none ||
+
+      responses:
+        '200':
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceAttestationResponseType'
+        '400':
+          $ref: '#/components/responses/Error400BadRequest'
+        '403':
+          $ref: '#/components/responses/Error403Forbidden'
+        '404':
+          $ref: '#/components/responses/Error404NotFound'
+        '500':
+          $ref: '#/components/responses/Error500InternalError'
+
 
 components:
   parameters:
@@ -685,25 +730,6 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/DeviceIdentifierType'
-    limit:
-      name: limit
-      in: query
-      description: Limits the number of matching items in a response ('pagesize', default and max = 50).
-      schema:
-        type: integer
-        maximum: 50
-        minimum: 1
-    offset:
-      name: offset
-      in: query
-      description: Specifies skipped matching pages ('pagesize' == limit), (default = 0).
-      schema:
-        type: integer
-    devicestatus:
-      name: devicestatus
-      in: query
-      schema:
-        $ref: '#/components/schemas/DeviceStatusType'
 
   responses:
     Error400BadRequest:
@@ -814,11 +840,9 @@ components:
               description: timestamp of last login associated to the registered device
               type: string
               format: date-time
-    EmailListType:
-      type: array
-      items:
-        type: string
-        format: email
+    EmailAddressType:
+      type: string
+      format: email
     ErrorType:
       description: Error object with additional information about the occurred error
       type: object
@@ -831,3 +855,25 @@ components:
           type: string
       required:
         - errorCode
+    DeviceAttestationResponseType:
+      description: |
+        "A JSON Web Token (JWT) with following format build according to RFC-7515:</br>
+        base64url (protected_header) + '.' + base64url (payload) + '.' + base64url (signature)"</br>
+        Content for device attestation:</br>
+        - protected_header contains:
+          - "typ": "JWT"
+          - "alg": "ES256" 
+          - "x5c": signature certificate (C.FD.SIG)
+        - payload claims:
+          - "iat": issued at timestamp
+          - "exp": expiry timestamp (always iat + 120 min)
+          - "actorId": KVNR
+        - signature contains token signature
+      type: object
+      properties:
+        jwt:
+          type: string
+          format: application/jwt
+          pattern: ^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$
+          example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsIng1YyI6ImNlcnRpZmljYXRlIGMuZmQuc2lnIn0.eyJhY3RvcklkIjoiQTEyMzQ1Njc4OSIsICJpYXQiOjE3MzY4OTkyMDAsImV4cCI6MTczNjkwNjQwMH0.e3NpZ25hdHVyZU92ZXJIZWFkZXJBbmRQYXlsb2FkfQ"
+
