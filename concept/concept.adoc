@@ -35,7 +35,7 @@ endif::[]
 :sectnums:
 
 // :revdate: 30.01.2024
-:revnumber: 3.0.1
+:revnumber: 3.0.2
 :document-title: Grobkonzept der "ePA für alle"
 :document-subtitle: gemKPT_ePAfuerAlle
 :organization: gematik GmbH
@@ -95,6 +95,13 @@ endif::[]
 |5.3.2, 8
 |Anpassung Legal Policy zwecks Einstellen elektronischer Abschriften; Anpassung Befugnisdauer für ÖGD; Veröffentlichung
 |gematik
+
+|3.0.2
+|11.07.2024
+|4
+|Anpassung Service-Lokalisierung; Veröffentlichung
+|gematik
+
 
 |===
 

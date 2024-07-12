@@ -35,10 +35,15 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
 
-  version: 1.1.1
+  version: 1.2.0
 
   # version history:
   # ----------------
+  # version 1.2.0
+  #   - just one email address is allowed
+  #   - remove getEmails
+  #   - remove deleteEmails
+  #   - update of get, set, update of emails
   # version 1.1.1
   #   - added limit of 10 mail addresses to setEmail operation (description)
   #   - editorial correction in operation descriptions
@@ -55,142 +60,46 @@ tags:
 - name: EmailManagement
   description: |
     **EmailManagement** allows:
-    - by ePA-FdV a user to manage email addresses to the user's kvnr
-    - by insurance to manage email addresses of an insurant hosted by the insurance
+    - by ePA-FdV user to get or update email address to the user's kvnr
+    - by insurance to register or update email address of an insurant hosted by the insurance
    
     **Manage email addresses:**
     - (VAU channel shall be established)
     - (Login (IDP user authorization) shall be successfully completed)
-    - Get a list of all registered email addresses
-    - register an new email address
-    - Pick the email identifier of an stored email to manage
-      - Delete email address (deleteEmail)
 
 paths:
 
-  /epa/basic/api/v1/emails:
+  /epa/basic/api/v1/emailaddress:
     parameters:
       - $ref: '#/components/parameters/useragent'
       - $ref: '#/components/parameters/insurantid'
-    get:
-      parameters:
-        - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/offset'
-      tags:
-        - EmailManagement
-      operationId: getEmails
-      summary: (getEmails) Get a list of all emails
-      description: |
-        Get a list of actual emails of the _insurantid_.</br>
-        This operation is limited to users of role _oid_versicherter_, which has to be the insurant itself or role _oid_kostentraeger_, which shall manage emails only for insurants hosted by the insurance.
-        **Client**:</br>
-        A client shall consider the schema for 'Queries' and 'Paging'.
-        An ePA-FdV client shall have a valid device registration.
-
-        **Provider**:</br>
-        The returned list shall contain only emails and matching the query parameters.</br>
-
-        Paging:</br>
-        _offset_ and _limit_ parameters shall be related to the amount of emails matching the query and only occur 
-        once in a request. Default shall be for _offset_ = 0 and for _limit_ = 50 (this shall also be the maximum _limit_).
-        The applied _offset_ and _limit_ and the total amount of matching emails shall be part of the response.</br>
-        _offset_ shall be a "page-offset" and is related to _limit_ which is the "page-size", e.g. if total amount of 
-        matching emails is 75, than _offset_ = 0 with _limit_ = 40 return result 1 to 40 and _offset_ = 1 with _limit_ 
-        = 40 return result 41 to 75 and _offset_ = 2 with _limit_ = 40 return an 'empty' result.  
-        
-        Queries:</br>
-        Different query parameter (name) shall be applied as logical AND, multiple query strings (same name) 
-        as OR. Default for all query parameters is ('*').
-        Queries for _userrole_ shall use the numeric, symbolic oid (e.g. 1.2.276.0.76.4.49 instead of 'oid_versicherter').</br>
-
-        | Conditions | Status code | Error code | Remarks |
-        |------------|-------------|------------|---------|
-        | Successful operation | 200 |||
-        | Request does not match schema | 400 | malformedRequest ||
-        | Requestor role is not _oid_versicherter_ or _oid_kostentraeger_| 403 | invalidOid ||
-        | Device registration does not exist | 403 | unregisteredDevice ||
-        | Missing _x-insurantid_ | 403 | invalidParam | _oid_kostentraeger_ (only) requires _x-insurantid_ |
-        | Requestor is not insurant (health record owner) | 409 | requestMismatch | in case role is _oid_versicherter_ |
-        | Any other error | 500 | internalError ||
-
-         </br>
-        | Postconditions                        | Remarks |
-        |---------------------------------------|---------|
-        | none ||
-
-      responses:
-        '200':
-          description: OK. Returns a list of all emails (matching the query)
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  query:
-                    type: object
-                    properties:
-                      offset:
-                        description: applied offset to matching results
-                        type: integer
-                      limit:
-                        description: applied limit to matching results
-                        type: integer
-                      totalMatching:
-                        description: total amount of matching results for the email query
-                        type: integer
-                  data:
-                    type: array
-                    items:
-                      allOf:
-                      - $ref: '#/components/schemas/EmailResponseType'
-              examples:
-                getAll:
-                  $ref: '#/components/examples/Get_AllEmails'
-                get_AllEmails_offset_limit:
-                  $ref: '#/components/examples/Get_AllEmails_offset_limit'
-        '400':
-          $ref: '#/components/responses/Error400BadRequest'
-        '403':
-          $ref: '#/components/responses/Error403Forbidden'
-        '409':
-          $ref: '#/components/responses/Error409Conflict'
-        '500':
-          $ref: '#/components/responses/Error500InternalError'
-
+ 
     post:
       tags:
         - EmailManagement
-      operationId: setEmail
-      summary: (setEmail) Set a single email
+      operationId: setEmailAddress
+      summary: (setEmailAddress) Set a single email address
       description: |
-       This operation sets a new email for an insurant. Emails refer to a specific
+       This operation sets a new email address for an insurant. Emails refer to a specific
        user, identified by its _insurantid_.</br>
-       This operation is limited to users of role _oid_versicherter_, which has to be the insurant itself
-        or role _oid_kostentraeger_, which shall manage emails only for insurants hosted by the insurance.
+       This operation is limited to users of role _oid_kostentraeger_, which shall manage emails only for insurants hosted by the insurance.
 
        **Client**:</br>
        A client shall (mandatory) apply an email address.
-       An ePA-FdV client shall have a valid device registration.
 
        **Provider**:</br>
        A new email address associated to the kvnr of the requestor shall be created with:
        - timestamp _createdAt_ set to current system time.
 
-       The maximum of 10 different mail addresses in total shall not be exceeded. The operation shall fail
-       in case this limit can not be kept.
-       Provision of an already existing mail address (case-insensitive) is a success case but no new address is created.
-
-       A notification mail shall be send to the new and all other stored mail addresses of the user.
+       A notification email shall be sent to this new email address of the user.
 
        | Conditions | Status code | Error code | Remarks |
        |------------|-------------|------------|---------|
        | Successful operation | 201 |||
        | Request does not match schema | 400 | malformedRequest ||
-       | Requestor role is not _oid_versicherter_ or _oid_kostentraeger_ | 403 | invalidOid ||
+       | Requestor role is not _oid_kostentraeger_ | 403 | invalidOid ||
        | Device registration does not exist |403 | unregisteredDevice ||
-       | Missing _x-insurantid_ | 403 | invalidParam | _oid_kostentraeger_ (only) requires _x-insurantid_ |
-       | Requestor is not insurant (health record owner) | 409 | requestMismatch | in case role is _oid_versicherter_ |
-       | Provided mail address violates maximum limit | 409 | limitExceeded | if new mail address exeeds the limit of 10 different mail addresses |
+       | Missing _x-insurantid_ | 403 | invalidParam | _oid_kostentraeger_ requires _x-insurantid_ |
        | Any other error | 500 | internalError | (see 'Retry interval') |
 
        </br>
@@ -212,7 +121,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EmailIdentifierType'
+                $ref: '#/components/schemas/EmailAddressType'
         '400':
           $ref: '#/components/responses/Error400BadRequest'
         '403':
@@ -222,17 +131,11 @@ paths:
         '500':
           $ref: '#/components/responses/Error500InternalError'
 
-  /epa/basic/api/v1/emails/{identifier}:
-    parameters:
-      - $ref: '#/components/parameters/useragent'
-      - $ref: '#/components/parameters/insurantid'
-      - $ref: '#/components/parameters/identifier'
-
     get:
       tags:
         - EmailManagement
-      operationId: getEmail
-      summary: (getEmail) get an email address by email _identifier_
+      operationId: getEmailAddress
+      summary: (getEmailAddress) get stored email address
       description: |
         Retrieves information about a specific email address.</br>
         This operation is limited to users of role _oid_versicherter_, which has to be the insurant itself or role _oid_kostentraeger_, which shall manage emails only for insurants hosted by the insurance.
@@ -252,7 +155,7 @@ paths:
         | Requestor role is not _oid_versicherter_ | 403 | invalidOid ||
         | Device registration does not exist |403 | unregisteredDevice ||
         | Missing _x-insurantid_ | 403 | invalidParam | _oid_kostentraeger_ (only) requires _x-insurantid_ |
-        | Email (_identifier_) does not exist|404| noRessource ||
+        | Email does not exist|404| noRessource ||
         | Requestor is not insurant (health record owner) | 409 | requestMismatch | in case role is _oid_versicherter_ |
         | Any other error | 500 | internalError | (see 'Retry interval') |
 
@@ -267,7 +170,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EmailType'
+                $ref: '#/components/schemas/EmailAddressType'
         '400':
           $ref: '#/components/responses/Error400BadRequest'
         '403':
@@ -279,57 +182,67 @@ paths:
         '500':
           $ref: '#/components/responses/Error500InternalError'
 
-    delete:
+    put:
       tags:
         - EmailManagement
-      operationId: deleteEmail
-      summary: (deleteEmail) Delete an email address
+      operationId: replaceEmailAddress
+      summary: (replaceEmailAddress) Replaces the existing email address
       description: |
-        Deletes an email address.</br>
-        This operation is limited to users of role _oid_versicherter_, which has to be the insurant itself 
-        or role _oid_kostentraeger_, which shall manage emails only for insurants hosted by the insurance.
-        If the last (remaining) registered email address can not be deleted.
+       This operation replaces the existing email address for an insurant with a new email address. 
+       Emailadress refers to a specific user, identified by its insurantid. This operation is limited to users of 
+       role oid_versicherter, which has to be the insurant itself or role oid_kostentraeger, which shall manage emails only 
+       for insurants hosted by the insurance.
 
-        **Client**:</br>
-        An ePA-FdV client shall have a valid device registration.
-        Ensure that the email address to be deleted is not the only one registered email address.
+       **Client**:</br>
+       A client shall (mandatory) apply an email address. An ePA-FdV client shall have a valid device registration.
 
-        **Provider**</br>
-        The email address shall be finally deleted.
+       **Provider**:</br>
+       The existing email address is replaced by the provided new email address. The following information will be appended 
+       to the new email address::
 
+       - timestamp _createdAt_ set to current system time.
 
-        An active user session is required.
+       A notification email should be sent to both the existing and the new email address.
 
-        | Conditions | Status code | Error code | Remarks |
-        |------------|-------------|------------|---------|
-        | Successful operation | 204|||
-        | Request does not match schema | 400 | malformedRequest ||
-        | Requestor role is not _oid_versicherter_ | 403 | invalidOid ||
-        | Device registration does not exist |403 | unregisteredDevice ||
-        | Missing _x-insurantid_ | 403 | invalidParam | _oid_kostentraeger_ (only) requires _x-insurantid_ |
-        | Email (_identifier_) does not exist|404| noRessource ||
-        | Requestor is not insurant (health record owner) | 409 | requestMismatch | in case role is _oid_versicherter_ |
-        | Last (remaining) registered email address can not be deleted| 409 | onlyOneEmail ||
-        | Any other error | 500 | internalError | (see 'Retry interval') |
+       | Conditions | Status code | Error code | Remarks |
+       |------------|-------------|------------|---------|
+       | Successful operation | 200 |||
+       | Request does not match schema | 400 | malformedRequest ||
+       | Requestor role is not _oid_versicherter_ or _oid_kostentraeger_ | 403 | invalidOid ||
+       | Device registration does not exist |403 | unregisteredDevice ||
+       | Missing _x-insurantid_ | 403 | invalidParam | _oid_kostentraeger_ (only) requires _x-insurantid_ |
+       | Requestor is not insurant (health record owner) | 409 | requestMismatch | in case role is _oid_versicherter_ |
+       | Any other error | 500 | internalError | (see 'Retry interval') |
 
-         </br>
-        | Postconditions                        | Remarks |
-        |---------------------------------------|---------|
-        | The email address is deleted | successful operation only |
+       </br>
+       | Postconditions                        | Remarks |
+       |---------------------------------------|---------|
+       | Email notification is sent to both the existing and the new email address ||
+       | The raw-data of the operation is collected and associated to _useragent_ | for any operation result according to gemSpec_Perf UC_A2.2 and UC_A2.5 |
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailRequestType'
 
       responses:
-        '204':
-          description: 'OK. Email address deleted.'
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailAddressType'
         '400':
           $ref: '#/components/responses/Error400BadRequest'
         '403':
           $ref: '#/components/responses/Error403Forbidden'
-        '404':
-          $ref: '#/components/responses/Error404NotFound'
         '409':
           $ref: '#/components/responses/Error409Conflict'
         '500':
           $ref: '#/components/responses/Error500InternalError'
+
 
 components:
   parameters:
@@ -347,26 +260,6 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/UserAgentType'
-    limit:
-      name: limit
-      in: query
-      description: Limits the number of matching items in a response ('pagesize', default and max = 50).
-      schema:
-        type: integer
-        maximum: 50
-        minimum: 1
-    offset:
-      name: offset
-      in: query
-      description: Specifies skipped matching pages ('pagesize' == limit), (default = 0).
-      schema:
-        type: integer
-    identifier:
-      name: identifier
-      in: path
-      required: true
-      schema:
-        $ref: '#/components/schemas/EmailIdentifierType'
 
   responses:
     Error400BadRequest:
@@ -425,7 +318,6 @@ components:
         For today the record identifier equals the insurant id (kvnr).
       pattern: '^[A-Z]{1}\d{9}$'
       example: Z123456789
-
     EmailRequestType:
       type: object
       properties:
@@ -433,44 +325,11 @@ components:
           $ref: '#/components/schemas/EmailAddressType'
       required:
        - email
-
     EmailAddressType:
       type: string
       description: "email address"
       format: email
       example: "name@example.com"
-    EmailResponseType:
-      allOf:
-        - type: object
-          properties:
-            identifier:
-              $ref: '#/components/schemas/EmailIdentifierType'
-          required:
-            - identifier
-        - $ref: '#/components/schemas/EmailType'
-    EmailIdentifierType:
-      type: string
-      description: "Unique identifier of an email"
-      example: "0815"
-    EmailType:
-      type: object
-      properties:
-        email:
-          $ref: '#/components/schemas/EmailAddressType'
-        actor:
-          description: "creator of the email address - name of user session"
-          type: string
-          example: "Betriebskrankenkasse ABC"
-        createdAt:
-          description: timestamp of email registration
-          type: string
-          format: date-time
-          example: "2025-04-22T14:23:01Z"
-      required:
-       - email
-       - actor
-       - createdAt
-
     ErrorType:
       description: Error object with additional information about the occurred error
       type: object
@@ -483,40 +342,3 @@ components:
           type: string
       required:
         - errorCode
-  examples:
-    Get_AllEmails:
-      summary: Get all Emails.
-      value:
-        query:
-          offset: 0
-          limit: 50
-          totalMatching: 3
-        data:
-          - identifier: "0001"
-            email: m.mustermann@gematik.de
-            actor: "Betriebskrankenkasse AAA"
-            createdAt: "2025-04-01T14:23:01Z"
-          - identifier: "0002"
-            email: max.mustermann@gematik.de
-            actor: "Max Mustermann"
-            createdAt: "2025-04-02T15:23:01Z"
-          - identifier: "0003"
-            email: max.mustermann123@gematik.de
-            actor: "Max Mustermann"
-            createdAt: "2025-04-03T16:23:01Z"
-    Get_AllEmails_offset_limit:
-      summary: Get all Entitlements with set offset=1 and limit=2 .
-      value:
-        query:
-          offset: 1
-          limit: 2
-          totalMatching: 3
-        data:
-          - identifier: "0001"
-            email: m.mustermann@gematik.de
-            actor: "Betriebskrankenkasse AAA"
-            createdAt: "2025-04-01T14:23:01Z"
-          - identifier: "0002"
-            email: max.mustermann@gematik.de
-            actor: "Max Mustermann"
-            createdAt: "2025-04-02T15:23:01Z"

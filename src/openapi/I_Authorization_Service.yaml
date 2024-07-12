@@ -36,10 +36,15 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
 
-  version: 1.3.0
+  version: 1.3.2
 
   # version history:
   # ----------------
+  # version 1.3.2
+  #   - sendAuthCodeFdv with new deviceAttestation
+  # version 1.3.1
+  #   - changed pattern for jwts bearerTokenType and ClientAttestType
+  #   - added statuscode 403 (invalAuth) to operation getFHIRVZDToken 
   # version 1.3.0
   #   - replaced 'challenge' by 'freshness parameter' in getChallengeForBearerToken and sendAuthorizationRequestBearerToken
   #   - renamed getChallengeForBearerToken to getFreshnessParameter
@@ -115,6 +120,21 @@ tags:
    (skipped) before login completion.
    This special case is signaled by a specific parameter _authorize_representative_ in a _sendAuthorizationRequestFdV_ call.
    The login succeeds but access is limited to the entitlement management of the health record of the user.
+   
+   **Access to systems other than home system**</br>
+   As Device Management only takes places in the home system, no device can be registered by an insurant with other systems.
+   Nonetheless, a successful login to a system (any) requires a confirmed device registration.
+   
+   Therefore the device registration of the home system is used for login to another system. As proof of a valid
+   and confirmed device registration, the home system issues a **Device Attestation** for a device.
+   This attestation is accepted by other systems and acts like a registration made by the other system itself.
+   
+   A device attestation shall be used during login to the other system (sendAuthCodeFdV in I_Authorization_Service)
+   instead of the deviceToken and deviceIdentifier as used with the home system.
+   
+   Deviating from the behaviour of the home system which persists a confirmed device registration, is a device attestation
+   only temporarily valid within a single user session, i.e. a new device attestation shall be retrieved from the home system
+   for any new login to another system.
 
 - name: Authorization SMC-B
   description: |
@@ -182,6 +202,7 @@ paths:
       summary:  (getFHIRVZDtoken) Get the FHIR VZD search access-token
       description: |
         Get the directory service (FHIR VZD) search-token of the health record system.
+        This operation is limited to authenticated users (IDP) only.
 
         **Client**:</br>
         A client shall use the provided search access-token for directory service queries instead of an own, individual
@@ -193,6 +214,7 @@ paths:
         | Conditions | Status code | Error code | Remarks |
         |------------|-------------|------------|---------|
         | Successful operation | 200 |||
+        | Requestor not authorized | 403 | invalAuth | no user session with valid ID-Token available |
         | Any other error | 500 | internalError | (see 'Retry interval') |
 
          </br>
@@ -509,7 +531,7 @@ paths:
          a login of a user on not owned device for representative entitlement only.
         The _x-authorize_representative_ parameter will force an authentication of the user with egK + pin or 
         npa + pin only and limit the possible operations to entitlement management only.
-        A client shall use the returned redirect url to invoke the authenticator. 
+        A client shall use the returned redirect url to invoke the authenticator. <br/>
        
         **Provider**:</br>
         The authorization service shall send a pushed authorization request (PAR) to the IDP (see: find more details).
@@ -553,6 +575,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/deviceidentifier'
         - $ref: '#/components/parameters/devicetoken'
+        - $ref: '#/components/parameters/deviceattestation'
       tags:
         - Authorization FdV
       operationId: sendAuthCodeFdV
@@ -565,9 +588,12 @@ paths:
         verify the device registration.
 
         **Client**:</br>
-        A client shall always send the authorization code received from the authenticator / IDP. 
+        A client shall always send the authorization code received from the authenticator / IDP. <br/>
 
-        A client shall send _x-device-identifier_ and _x-device-token_ if device used is already registered..
+        If the user needs access to home system and if device used is already registered, a client shall send _x-device-identifier_ and _x-device-token_.<br/>
+
+        If the user needs access to other than home system and if device used is already registered, a client shall send the device attestation. 
+        To get a device attestation the client shall request it at home system of the user (operation getDeviceAttestation of I_Device_Management_Insurant).<br/>
 
         A client shall not send _x-device-identifier_ and _x-device-token_ (suppress parameters at all) if the
         device is not yet registered and confirmed or if the preceding _sendAuthorizationRequestFdV_ call 
@@ -581,11 +607,16 @@ paths:
         The provided authorization code shall be exchanged for an ID-Token with the IDP. The ID-Token shall be converted
         into a HSM-ID-Token with an extended validity period.
         
-        Device verification:</br>
+        Device verification - home system:</br>
         If _x-device-identifier_ and _x-device-token_ are both submitted the device verification starts immediately after
         the authorization completion.
         Device identifier and -token shall be verified with the registered values.
         The x-device-identifier / x-device-token check shall only consider device registrations for the authorized user.
+
+        Device verification - other than home system:</br>
+        If _x-device-attestation_ is submitted the device verification starts immediately after the authorization completion.
+        The authorization service shall check the signature of device attestation. 
+        If the device attestation is valid by signature and time, and the KVNR submitted in device attestation matches to KVNR of the authorized user the authorization service shall accept the device registration.
 
         On success (ID-Token / HSM-ID-Token received and device binding check successful) a new user session shall be instantiated, 
         associated to the HSM-ID-Token.
@@ -609,6 +640,7 @@ paths:
         | Requestor role is not _oid_versicherter_ | 403 | invalidOid ||
         | _authorizationCode_ not valid | 403 | invalAuth | includes any error of Authorization Service and IDP which is not mapped to 500 internal Server error |
         | Wrong _x-device-token_  | 403 | invalidToken | if both parameters avaiable and allowed|
+        | Invalid signature of _x-device-attestation_ | 403 | invalSignature ||
         | Device registration does not exist (_x-device-identifier_)| 404| noResource | also if device is not associated to requestor kvnr |
         | Device registration not confirmed (_status_ == _pending_) | 409 | statusMismatch | confirm pending device registration before retry |
         | Any other error | 500 | internalError | (see 'Retry interval') |
@@ -664,9 +696,13 @@ paths:
                   value:
                     errorCode: invalOid
                 DeviceToken_invalid:
-                  summary: device token is invalid (wrong)
+                  summary: Device token is invalid (wrong)
                   value:
                     errorCode: invalToken
+                DeviceAttestation_invalid:
+                  summary: Signature of device attestation is invalid (wrong)
+                  value:
+                    errorCode: invalSignature
               schema:
                 $ref: '#/components/schemas/ErrorType'
         '404':
@@ -748,6 +784,13 @@ components:
       required: false
       schema:
         $ref: '#/components/schemas/DeviceTokenType'
+    deviceattestation:
+      name: x-device-attestation
+      in: header
+      description: The deviceAttestation of a device registration
+      required: false
+      schema:
+        $ref: '#/components/schemas/DeviceAttestationType'
     authorize_representative:
       name: x-authorize-representative
       in: header
@@ -852,6 +895,27 @@ components:
       type: string
       description: "Device tokens are strings with 64 hexadecimal symbols."
       example: "fe6b98ac23a3df214612fd089494eb2946589012a94e91ba6ed57f9213ba520a"
+    DeviceAttestationType:
+      description: |
+        "A JSON Web Token (JWT) with following format build according to RFC-7515:</br>
+        base64url (protected_header) + '.' + base64url (payload) + '.' + base64url (signature)"</br>
+        Content for device attestation:</br>
+        - protected_header contains:
+          - "typ": "JWT"
+          - "alg": "ES256" 
+          - "x5c": signature certificate (C.FD.SIG)
+        - payload claims:
+          - "iat": issued at timestamp
+          - "exp": expiry timestamp (always iat + 120 min)
+          - "actorId": KVNR
+        - signature contains token signature
+      type: object
+      properties:
+        jwt:
+          type: string
+          format: application/jwt
+          pattern: ^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$
+          example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsIng1YyI6ImNlcnRpZmljYXRlIGMuZmQuc2lnIn0.eyJhY3RvcklkIjoiQTEyMzQ1Njc4OSIsICJpYXQiOjE3MzY4OTkyMDAsImV4cCI6MTczNjkwNjQwMH0.e3NpZ25hdHVyZU92ZXJIZWFkZXJBbmRQYXlsb2FkfQ"
     NonceType:
       type: string
       description: "A random nonce with 64 hexadecimal symbols "
@@ -917,7 +981,7 @@ components:
         - signature: contains token signature
       type: string
       format: application/jwt
-      pattern: ^([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_\-\+\/=]+)$
+      pattern: ^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$
       example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsIng1YyI6ImNlcnRpZmljYXRlIGMuaGNpLmF1dCJ9.eyJpYXQiOjE3MDU2NzQ1NDQsImV4cCI6MTcwNTY3NTc0NCwibm9uY2UiOiI3NzIxNDM1Mjc3ZjVkMDEzN2IxN2VmOGI4MzVjYTAzY2YwOWRjMjM5MjZhYTE3NjZlNGY4MTMyNDMzZmYzN2Q2In0.e3NpZ25hdHVyZU92ZXJIZWFkZXJBbmRQYXlsb2FkfQ"
     BearerTokenType:
       description: |
@@ -939,7 +1003,7 @@ components:
         bearerToken:
           type: string
           format: application/jwt
-          pattern: ^([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_\-\+\/=]+)$
+          pattern: ^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$
           example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsIng1YyI6ImNlcnRpZmljYXRlIGMuZmQuYXV0In0.eyJ0eXBlIjoiZVBBLUF1dGhlbnRpc2llcnVuZyDDvGJlciBQS0kiLCJpYXQiOjE3MDU2NzQ1NDQsImNoYWxsZW5nZSI6IllTQmlZWE5sTmpRZ1pXNWpiMlJsWkNCamFHRnNiR1Z1WjJVZ0tHaGxZV3gwYUNCeVpXTnZjbVFnYzNsemRHVnRJSE53WldOcFptbGpJR052Ym5SbGJuUXAiLCJzdWIiOiI5LTg4MzExMDAwMDAxMTExMSJ9.e3NpZ25hdHVyZU92ZXJIZWFkZXJBbmRQYXlsb2FkfQ"
     ErrorType:
       description: Error object with additional information about the occurred error

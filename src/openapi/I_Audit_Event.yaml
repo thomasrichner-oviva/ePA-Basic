@@ -278,7 +278,7 @@ paths:
 
         #### **OperationOutcome**
         ##### Profile: 
-        [https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.1](https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.1)
+        [https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.2](https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.2)
 
 
       parameters:
@@ -478,7 +478,7 @@ components:
                 resourceType: OperationOutcome
                 meta:
                   profile:
-                    - https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.1
+                    - https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.2
                 issue:
                   - severity: error
                     code: processing
@@ -493,7 +493,7 @@ components:
                 resourceType: OperationOutcome
                 meta:
                   profile:
-                    - https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.1
+                    - https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.2
                 issue:
                   - severity: error
                     code: processing
@@ -508,7 +508,7 @@ components:
                 resourceType: OperationOutcome
                 meta:
                   profile:
-                    - https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.1
+                    - https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.2
                 issue:
                   - severity: error
                     code: not-supported
@@ -531,7 +531,7 @@ components:
                 resourceType: OperationOutcome
                 meta:
                   profile:
-                    - https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.1
+                    - https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.2
                 issue:
                   - severity: error
                     code: processing
@@ -546,7 +546,7 @@ components:
                 resourceType: OperationOutcome
                 meta:
                   profile:
-                    - https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.1
+                    - https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.2
                 issue:
                   - severity: error
                     code: processing
@@ -614,7 +614,7 @@ components:
               type: array
               items:
                 type: string
-                example: https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.1
+                example: https://gematik.de/fhir/epa/StructureDefinition/epa-operation-outcome|1.0.2
         issue:
           type: array
           items:
@@ -654,7 +654,7 @@ components:
           type: array
           items:
             type: string
-            example: https://gematik.de/fhir/epa/StructureDefinition/audit-event|1.0.1
+            example: https://gematik.de/fhir/epa/StructureDefinition/audit-event|1.0.2
 
     Resource:
       description: This is the base resource type for everything.

@@ -24,6 +24,14 @@
     "endLine": 40
   },
   {
+    "outputFile": "CodeSystem-epa-auditevent-roletype-cs.json",
+    "fshName": "EPAAuditEventRoleTypeCS",
+    "fshType": "CodeSystem",
+    "fshFile": "codesystems/EPAAuditEventRoleTypeCS.fsh",
+    "startLine": 1,
+    "endLine": 7
+  },
+  {
     "outputFile": "CodeSystem-epa-auditevent-sourcetype-cs.json",
     "fshName": "EPAAuditEventSourceTypeCS",
     "fshType": "CodeSystem",
@@ -77,6 +85,6 @@
     "fshType": "ValueSet",
     "fshFile": "valuesets/EPAParticipationRoleTypeVS.fsh",
     "startLine": 1,
-    "endLine": 9
+    "endLine": 10
   }
 ]
