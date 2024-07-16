@@ -29,26 +29,26 @@ footer:
   recto:
     left:
       content: |
-        gemKPT_ePAfuerAlle_V3.0.2.pdf +
+        gemKPT_ePAfuerAlle_V3.1.0RC.pdf +
         Version: {revnumber}
     right:
       content: |
         Seite {page-number} von {page-count} +
-        Stand: 11.07.2024
+        Stand: 15.07.2024
     center:
       content: |
         Übergreifendes Konzept +
-        (C) gematik – öffentlich
+        (C) gematik – vertraulich
   verso:
     left:
       content: |
-        gemKPT_ePAfuerAlle_V3.0.2.pdf +
+        gemKPT_ePAfuerAlle_V3.1.0RC.pdf +
         Version: {revnumber}
     right:
       content: |
         Seite {page-number} von {page-count} +
-        Stand: 11.07.2024
+        Stand: 15.07.2024
     center:
       content: |
         Übergreifendes Konzept +
-        (C) gematik – öffentlich
+        (C) gematik – vertraulich
