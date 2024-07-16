@@ -39,10 +39,12 @@ info:
     Whenever a _Postcondition_ mandates a log-entry, this entry shall contain
     data as defined in A_24055*.
 
-  version: 1.2.0
+  version: 1.3.0
 
   # version history:
   # ----------------
+  # version 1.3.0
+  #   - new ressource researchDataPurpose for detailed consent of research data submission
   # version 1.2.0
   #   - bugfix UserAgentType
   #   - return all changed consent decisions in response of updateConsentDecision  
@@ -72,6 +74,10 @@ tags:
     description: |
      Consent decision management operations allow to view current decisions made and to change those 
      decisions regarding consent related functions of the health record.
+  - name: ResearchDataPurposes
+    description: |
+     Consent decision management provides operations to manage the insurant's consent decisions regarding the 
+     detailled purpose of use of transmitted health record data in the research data center (FDZ).    
 
 paths:
   /epa/basic/api/v1/consents/{functionid}:
@@ -130,6 +136,12 @@ paths:
           - (f) set the decision for _medication_ to _deny_ (including the consequences for clients) if _functionid_ = _erp-submission_ is 
             set to _deny_.
 
+        _functionid_ == _research-submission_:</br> 
+          The change of this decision prevents submission of pseudonymized medical data to the research data center (FDZ) if set to _deny_. 
+          The _deny_-decision information shall be sent to the FDZ instead of any further research related data for information.
+          If set to _permit_ new medical data will be pseudonymized and send to the FDZ, including the research data purpose 
+          consent decisions of the insurant.</br> 
+        
         If decision provided equals decision stored (i.e. no change), this shall not cause an error response.
 
         An unknown parameter _functionid_ shall lead to rejection of the request. This operation operates on existing
@@ -315,6 +327,8 @@ paths:
                   decision: "deny"
                 - functionId: "erp-submission"
                   decision: "permit"
+                - functionId: "research-submission"
+                  decision: "permit"
               schema:
                 type: array
                 items:
@@ -329,6 +343,141 @@ paths:
           $ref: "#/components/responses/Error409Conflict"
         '500':
           $ref: "#/components/responses/Error500InternalError"
+
+  /epa/basic/api/v1/researchdatapurposes:
+    parameters:
+      - $ref: '#/components/parameters/insurantid'
+      - $ref: '#/components/parameters/useragent'
+    put:
+      tags:
+        - ResearchDataPurposes
+      operationId: updateResearchDataPurposes
+      summary: (updateResearchDataPurposes) Update the consent list regarding purposes for usage of research data
+      description: |
+        Update the user decision regarding purposes of research queries that the submitted data could be used in within 
+        the FDZ (ResearchDataPurposes).</br>
+        This operation is limited to entitled users of role oid_versicherter and oid_ombudsstelle.
+
+        **Client**:</br>
+        no recommendations.
+
+        **Provider**:</br>
+        A changed list of ResearchDataPurposes shall be persisted securely in SecureDataStorage and will be sent to the FDZ via Research Data Submission.</br>
+        The operation can only be successful in case of general existing consent to research data submission 
+        _functionid_ == _research-submission_:</br> 
+
+        An email shall be sent to the insurant using the registered mail address after a successful change of 
+        a decision for notification. The mail shall contain understandable information about the changed consent
+        decision to rearch data submission and timestamp of change (according to A_24844*)."
+
+        | Conditions | Status code | Error code | Remarks |
+        |------------|-------------|------------|---------|
+        | Successful operation | 200 |||
+        | Request does not match schema | 400 | malformedRequest ||
+        | Requestor has no valid entitlement | 403 | notEntitled ||
+        | Requestor role is not _oid_versicherter_ or _oid_ombudsstelle_| 403 | invalidOid ||
+        | Health record does not exist | 404 | noHealthRecord | _insurantid_ unknown |
+        | No consent for research | 404 | noResource ||
+        | Health record is not in state ACTIVATED | 409 | statusMismatch | (see 'Retry interval') |
+        | Any other error | 500 | internalError | (see 'Retry interval') |
+
+         </br>
+        | Postconditions                        | Remarks |
+        |---------------------------------------|---------|
+        | The updated list of ResearchDataPurposes is persisted securely in SecureDataStorage | |
+        | Updated list of ResearchDataPurposes is provided to Research Data Submission| |
+        | An email is sent to the insurant | success case with change of consent only |
+        | A log-entry for the operation exists | all operation results |
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/ResearchDataPurposesType"
+            examples:
+              Permit_Pupose1_only:
+                $ref: "#/components/examples/Permit_Pupose1_only"
+      responses:
+        "200":
+          description: OK. ResearchDataPurposes successfully updated
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ResearchDataPurposesType"
+              examples:
+                Permit_Pupose1_only:
+                  $ref: "#/components/examples/Permit_Pupose1_only"
+        '400':
+          $ref: "#/components/responses/Error400BadRequest"
+        '403':
+          $ref: "#/components/responses/Error403Forbidden"
+        '404':
+          $ref: "#/components/responses/Error404NotFound"
+        '409':
+          $ref: "#/components/responses/Error409Conflict"
+        '500':
+          $ref: "#/components/responses/Error500InternalError"
+    get:
+      tags:
+        - ResearchDataPurposes
+      operationId: getResearchDataPurposes
+      summary: (getResearchDataPurposes) Read the consent list regarding purposes for usage of research data
+      description: |
+        Get current user decision regarding purposes of research queries that the submitted data could be used in within 
+        the FDZ (ResearchDataPurposes).</br>
+        This operation is limited to entitled users of role oid_versicherter and oid_ombudsstelle.
+
+        **Client**:</br>
+        no recommendations.
+
+        **Provider**:</br>
+        The operation can only be successful in case of general existing consent to rearch data submission 
+        _functionid_ == _research-submission_:</br>
+
+        | Conditions | Status code | Error code | Remarks |
+        |------------|-------------|------------|---------|
+        | Successful operation | 200 |||
+        | Request does not match schema | 400 | malformedRequest ||
+        | Requestor has no valid entitlement | 403 | notEntitled ||
+        | Requestor role is not _oid_versicherter_ or _oid_ombudsstelle_| 403 | invalidOid ||
+        | Health record does not exist | 404 | noHealthRecord | _insurantid_ unknown |
+        | No consent for research | 404 | noResource ||
+        | Health record is not in state ACTIVATED | 409 | statusMismatch | (see 'Retry interval') |
+        | Any other error | 500 | internalError | (see 'Retry interval') |
+
+         </br>
+        | Postconditions                        | Remarks |
+        |---------------------------------------|---------|
+        | none ||
+
+      responses:
+        '200':
+          description: Ok.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ResearchDataPurposesType"
+              examples:
+                Permit_Pupose1_only:
+                  $ref: "#/components/examples/Permit_Pupose1_only"
+        '400':
+          $ref: "#/components/responses/Error400BadRequest"
+        '403':
+          $ref: "#/components/responses/Error403Forbidden"
+        '404':
+          $ref: "#/components/responses/Error404NotFound"
+        '409':
+          $ref: "#/components/responses/Error409Conflict"
+        '500':
+          $ref: "#/components/responses/Error500InternalError"
+
 
 components:
   parameters:
@@ -426,6 +575,42 @@ components:
       example:
           functionId: "medication"
           decision: "deny"
+
+    ResearchDataPurposesType:
+      description: "List of Research Data Purposes"
+      type: object
+      properties:
+        purpose1:
+          $ref: '#/components/schemas/purpose1Type'
+        purpose2:
+          $ref: '#/components/schemas/purpose2Type'
+        purpose3:
+          $ref: '#/components/schemas/purpose3Type'
+        purpose4:
+          $ref: '#/components/schemas/purpose4Type'
+        purpose5:
+          $ref: '#/components/schemas/purpose5Type'
+        purpose6:
+          $ref: '#/components/schemas/purpose6Type'
+        purpose7:
+          $ref: '#/components/schemas/purpose7Type'
+        purpose8:
+          $ref: '#/components/schemas/purpose8Type'
+        purpose9:
+          $ref: '#/components/schemas/purpose9Type'
+        purpose10:
+          $ref: '#/components/schemas/purpose10Type'
+      required:
+        - purpose1
+        - purpose2
+        - purpose3
+        - purpose4
+        - purpose5
+        - purpose6
+        - purpose7
+        - purpose8
+        - purpose9
+        - purpose10
     UserAgentType:
       description: "Information about client software with: ClientId(20 characters) + / + VersionNumber (1 to 15 characters)."
       type: string
@@ -441,6 +626,76 @@ components:
         For today the record identifier equals the insurant id (kvnr).
       pattern: '^[A-Z]{1}\d{9}$'
       example: Z123456789
+    purpose1Type:
+      description: "State of consent(permit or deny) to purpose referring §303e SGB V clause 2 number 1: Wahrnehmung von Steuerungsaufgaben durch die Kollektivvertragspartner"
+      type: object
+      properties:
+        decision:
+          type: string
+          enum: ["permit", "deny"]
+    purpose2Type:
+      description: "State of consent(permit or deny) to purpose referring §303e SGB V clause 2 number 2: Verbesserung der Qualität der Versorgung sowie Verbesserung der Sicherheitsstandards der Prävention, Versorgung und Pflege"
+      type: object
+      properties:
+        decision:
+          type: string
+          enum: ["permit", "deny"]
+    purpose3Type:
+      description: "State of consent(permit or deny) to purpose referring §303e SGB V clause 2 number 3: Planung von Leistungsressourcen, zum Beispiel Krankenhausplanung oder Pflegestrukturplanungsempfehlungen nach § 8a Absatz 4 des Elften Buches"
+      type: object
+      properties:
+        decision:
+          type: string
+          enum: ["permit", "deny"]
+    purpose4Type:
+      description: "State of consent(permit or deny) to purpose referring §303e SGB V clause 2 number 4: wissenschaftliche Forschung zu Fragestellungen aus den Bereichen Gesundheit und Pflege, Analysen des Versorgungsgeschehens, sowie Grundlagenforschung im Bereich der Lebenswissenschaften"
+      type: object
+      properties:
+        decision:
+          type: string
+          enum: ["permit", "deny"]
+    purpose5Type:
+      description: "State of consent(permit or deny) to purpose referring §303e SGB V clause 2 number 5: Unterstützung politischer Entscheidungsprozesse zur Weiterentwicklung der gesetzlichen Kranken- und Pflegeversicherung"
+      type: object
+      properties:
+        decision:
+          type: string
+          enum: ["permit", "deny"]
+    purpose6Type:
+      description: "State of consent(permit or deny) to purpose referring §303e SGB V clause 2 number 6: Analysen zur Wirksamkeit sektorenübergreifender Versorgungsformen sowie zur Wirksamkeit von Einzelverträgen der Kranken- und Pflegekassen"
+      type: object
+      properties:
+        decision:
+          type: string
+          enum: ["permit", "deny"]
+    purpose7Type:
+      description: "State of consent(permit or deny) to purpose referring §303e SGB V clause 2 number 7: Wahrnehmung von Aufgaben der Gesundheitsberichterstattung, anderer Berichtspflichten des Bundes nach diesem oder dem Elften Buch und der amtlichen Statistik sowie Berichtspflichten der Länder"
+      type: object
+      properties:
+        decision:
+          type: string
+          enum: ["permit", "deny"]
+    purpose8Type:
+      description: "State of consent(permit or deny) to purpose referring §303e SGB V clause 2 number 8: Wahrnehmung gesetzlicher Aufgaben in den Bereichen öffentliche Gesundheit und Epidemiologie"
+      type: object
+      properties:
+        decision:
+          type: string
+          enum: ["permit", "deny"]
+    purpose9Type:
+      description: "State of consent(permit or deny) to purpose referring §303e SGB V clause 2 number 9: Entwicklung, Weiterentwicklung und Überwachung der Sicherheit von Arzneimitteln, Medizinprodukten, Untersuchungs- und Behandlungsmethoden, Hilfs- und Heilmitteln, digitalen Gesundheits- und Pflegeanwendungen sowie Systemen der Künstlichen Intelligenz im Gesundheitswesen einschließlich des Trainings, der Validierung und des Testens dieser Systeme der Künstlichen Intelligenz"
+      type: object
+      properties:
+        decision:
+          type: string
+          enum: ["permit", "deny"]
+    purpose10Type:
+      description: "State of consent(permit or deny) to purpose referring §303e SGB V clause 2 number 10: Nutzenbewertung von Arzneimitteln, Medizinprodukten, Untersuchungs- und Behandlungsmethoden, Hilfs- und Heilmitteln sowie digitalen Gesundheits- und Pflegeanwendungen, Verhandlung von Vergütungsbeträgen oder Festlegung von Höchstbeträgen und Schwellenwerten nach § 134 sowie Vereinbarung oder Festsetzung von Erstattungsbeträgen von Arzneimitteln nach § 130b"
+      type: object
+      properties:
+        decision:
+          type: string
+          enum: ["permit", "deny"]
     ErrorType:
       description: "Error object with additional information about the occurred error"
       type: object
@@ -453,3 +708,29 @@ components:
           type: string
       required:
         - errorCode
+
+  examples:
+    Permit_Pupose1_only:
+      summary: only consent to purpose referring §303e SGB V clause 2 number 1
+      value:
+        purpose1:
+          decision: permit
+        purpose2:
+          decision: deny
+        purpose3:
+          decision: deny
+        purpose4:
+          decision: deny
+        purpose5:
+          decision: deny
+        purpose6:
+          decision: deny
+        purpose7:
+          decision: deny
+        purpose8:
+          decision: deny
+        purpose9:
+          decision: deny
+        purpose10:
+          decision: deny
+  

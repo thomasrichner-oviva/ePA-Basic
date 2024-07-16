@@ -67,7 +67,7 @@ Die Befugnisse für den Kostenträger, für den E-Rezept-Fachdienst und den Vers
 
 ===== Hinzufügen eines Nutzers zum Befugniskontext
 
-Unter Verwendung der Suche von Leistungserbringerinstitutionen (LEI) über den Verzeichnisdienst *VZD FHIR-Directory* sucht der Versicherte oder ein berechtigter Vertreter zunächst den neu zu befugenden Nutzer (d.h. eine Leistungserbringerinstitution, Institution des Öffentlicher Gesundheitsdienstes oder eine Institution der Arbeits- und Betriebsmedizin). Das *ePA-FdV* erzeugt dann eine neue Befugnis mit der Telematik-ID aus dem *VZD FHIR-Directory* mit der gewünschten Laufzeit und signiert diese mit Hilfe des Signaturdienstes (SigD). Nach erfolgreicher Anmeldung am Aktensystem wird die Befugnis im *Entitlement Management* registriert.
+Unter Verwendung der Suche von Leistungserbringerinstitutionen (LEI) über den Verzeichnisdienst *VZD FHIR-Directory* sucht der Versicherte oder ein berechtigter Vertreter zunächst den neu zu befugenden Nutzer (z.B. eine Leistungserbringerinstitution, Institution des Öffentlicher Gesundheitsdienstes oder eine Institution der Arbeits- und Betriebsmedizin). Das *ePA-FdV* erzeugt dann eine neue Befugnis mit der Telematik-ID aus dem *VZD FHIR-Directory* mit der gewünschten Laufzeit und signiert diese mit Hilfe des Signaturdienstes (SigD). Nach erfolgreicher Anmeldung am Aktensystem wird die Befugnis im *Entitlement Management* registriert.
 
 Der Versicherte bzw. ein berechtigter Vertreter kann die Laufzeit der neuen Befugnis flexibel festlegen oder aber eine dauerhafte Gültigkeit wählen. Die Befugnis für eine DiGA gilt immer bis zu deren Entzug.
 

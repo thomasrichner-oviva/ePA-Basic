@@ -1,0 +1,133 @@
+openapi: 3.0.3
+info:
+  title: I_Research_Data_Submission
+  description: |
+    **Prerequisites**:</br>
+    The Health Record System shall have build a package_fdz for a certain submissionID.
+
+    A mutual authenticated VAU-Channel has been established between Aktensystem and FDZ.
+
+  contact:
+    name: gematik GmbH
+    url: 'https://www.gematik.de'
+
+  license:
+    name: Apache 2.0
+    url: 'https://www.apache.org/licenses/LICENSE-2.0'
+
+  version: 0.0.1
+
+  # version history:
+  # ----------------
+  # version 0.0.1
+  #   - initial version for review
+
+servers:
+- url: https://epa-hst1.prod.epa4all.de
+
+tags:
+- name: Research Data Submission
+  description: Allows the download of a package_fdz for a given submissionID
+
+paths:
+  /epa/submission/api/v1/submissions/{submissionID}:
+    get:
+      tags:
+      - ResearchDataSubmission
+      operationId: getSubmission
+      summary: "Returns a package_fdz with pseudonymizized medical data for a given submissionID."
+      description: |
+        The Research Data Submission **SHALL** return the package_fdz for the given submissionID.
+
+        The package_fdz **SHALL** be named "Datenausleitung-AS-FDZ-<Submission-ID-Hex>.ndjson".
+
+        All data in package_fdz **SHALL** be Newline Delimited JSON.
+
+        Consent information within the package_fdz **SHALL** look like:
+        #
+        # comment: to increase readabiliy new lines are present in the following two examples.
+        # In the final package_fdz no new line shall be in these json-elements (-> ndjson).
+
+        #  { "resourceType": "ResearchDataSubmissionOptOut",
+        #     "subject": {
+        #        "identifier": { 
+        #              "system": "https://gematik.de/fhir/epa-research/sid/job-number-identifier",
+        #              "value": "MzItQnl0ZS1adWZhbGwtQXJiZWl0c251bW1lciMxLi4="
+        #         }, 
+        #    "function": "research-submission", 
+        #    "consent": "deny"
+        #    }
+        #
+        #
+        #  { "resourceType": "ResearchDataSubmissionOptOut",
+        #    "subject": {
+        #        "identifier": { 
+        #              "system": "https://gematik.de/fhir/epa-research/sid/job-number-identifier",
+        #              "value": "MzItQnl0ZS1adWZhbGwtQXJiZWl0c251bW1lciMxLi4="
+        #         }, 
+        #    "function": "research-submission", 
+        #    "consent": "deny",
+        #    "purposes": [{"purposeClass": "Purpose1", "consent": "permit"}, {"purposeClass": "Purpose2", "consent": "permit"}, {"purposeClass": "Purpose3", "consent": "deny"}, "purposeClass": "Purpose4", "consent": "permit"}, {"purposeClass": "Purpose5", "consent": "permit"}, {"purposeClass": "Purpose6", "consent": "permit"}, {"purposeClass": "Purpose7", "consent": "permit"}, {"purposeClass": "Purpose8", "consent": "permit"}, {"purposeClass": "Purpose9", "consent": "permit"}, {"purposeClass": "Purpose10", "consent": "permit"}]
+        #  }}
+
+        **Allowed user groups [professionOID]**
+        - oid_epa_fdz
+
+        | Conditions | Status code | Error code | Remarks |
+        |------------|-------------|------------|---------|
+        | Successful operation | 200 |||
+        | No valid submissionID | 404 | noResource ||
+        | Any other error | 500 | internalError ||
+
+         </br>
+        | Postconditions                        | Remarks |
+        |---------------------------------------|---------|
+        |||
+
+      responses:
+        "200":
+          description: Success
+          content:
+            application/fhir+ndjson:
+              schema:
+                type: string
+                format: binary
+              example: package_fdz for submissionID == x
+        '404':
+          $ref: '#/components/responses/Error404NotFound'
+        '500':
+          $ref: '#/components/responses/Error500InternalError'
+
+
+components:
+  responses:
+    Error404NotFound:
+      description: Not found.
+      content:
+        application/json:
+          example:
+            errorCode: noResource
+          schema:
+            $ref: '#/components/schemas/ErrorType'
+    Error500InternalError:
+      description: Internal Server Error
+      content:
+        application/json:
+          example:
+            errorCode: internalError
+          schema:
+            $ref: '#/components/schemas/ErrorType'
+
+  schemas:
+    ErrorType:
+      description: Error object with additional information about the occurred error
+      type: object
+      properties:
+        errorCode:
+          description: Error condition specifier
+          type: string
+        errorDetail:
+          description: Additional details regarding the error condition (if applicable)
+          type: string
+      required:
+        - errorCode

@@ -1,6 +1,13 @@
 <img align="right" width="250" height="47" src="images/Gematik_Logo_Flag_With_Background.png"/> <br/>    
  
 # Release Notes ePA Basic
+## Release 3.1.0 RC
+- release candidate ePA-3.1.0 
+### changes
+- new interface I_Entitlement_Management_EU.yaml
+- update concept for research data submission
+- added operations for research data consent management in I_Consent_Decision_Management.yaml
+- removed the sources for the FHIR R4 profiles. All profiles are provided by simplifier.net.
 ## Release 3.0.2
 - release ePA-3.0.2
 ### changes
@@ -13,6 +20,7 @@
 - reduced maximum amount of email addresses per user to 1, including change of all releated operations, in I_Email_Management.yaml (C_11885)
 - added authorization with device attestation for sendAuthCodeFdv in I_Authorization_Service.yaml (C_11885)
 - removed paging and filtering in I_Email_Management.yaml, I_Entitlement_Management_Insurant.yaml and I_Device_Management.yaml m(C_11912)
+- update fhir profiles for I_Audit_Event.yaml
 ## Release 3.0.2 alpha 
 - pre-release ePA-3.0.2 
 ### changes

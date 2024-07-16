@@ -5,18 +5,19 @@
 |This branch||
 |:----|----|
 | Context| __ePA 3.0 (ePA für alle)__|
-| Designation  | __Release 3.0.2__  |
-| Current status | __released__ |
-| Release date   | __2024-07-12__  |
-| Specifications| [Fachportal gematik: ePA 3.0.2](https://gemspec.gematik.de/releases/ePA_3_0_2/)|
-| Previous release| __Release 3.0.1__|
-| Previous branch | [**ePA-3.0.1**](https://github.com/gematik/epa-basic/tree/ePA-3.0.1)|
-| Follow-up | ePA-3.1.0 (planned)|
+| Designation  | __Release 3.1.0__  |
+| Current status | __pre-released__ |
+| Release date   | __2024-07-15__  |
+| Specifications| [Fachportal gematik: Vorabveröffentlichung ePA 3.1.0](https://gemspec.gematik.de/prereleases/Draft_ePA_3_1_0/)|
+| Previous release| __Release 3.0.2__|
+| Previous branch | [**ePA-3.0.2**](https://github.com/gematik/epa-basic/tree/ePA-3.0.2)|
+| Follow-up | not planned |
 | Associated repositories:||
-| Medication Service | [**ePA-Medication (3.0.2)**](https://github.com/gematik/ePA-Medication/tree/ePA-3.0.2) |
-| XDS Document Service | [**ePA-XDS-Document (3.0.2)**](https://github.com/gematik/ePA-XDS-Document/tree/ePA-3.0.2) |
-| FHIR Profiles | [**Simplifier**](https://simplifier.net/packages/de.gematik.epa/1.0.2) |
-| Account Relocation | [**ref-ePA-HealthRecordMigration (3.0)**](https://github.com/gematik/ref-ePA-HealthRecordMigration/tree/ePA-3.0) |
+| Medication Service | [**ePA-Medication (3.1.0)**](https://github.com/gematik/ePA-Medication/tree/ePA-3.1.0) |
+| XDS Document Service | [**ePA-XDS-Document (3.1.0)**](https://github.com/gematik/ePA-XDS-Document/tree/ePA-3.1.0) |
+| FHIR Profiles | [**Simplifier**](https://simplifier.net/epa) |
+| Account Relocation | [**ref-ePA-HealthRecordMigration (3.1)**](https://github.com/gematik/ref-ePA-HealthRecordMigration/tree/ePA-3.1) |
+| ePA Research Data | [**ePA-Research (3.1)**](https://github.com/gematik/epa-research/tree/ePA-3.1) |  
 
 </br>
 </br>

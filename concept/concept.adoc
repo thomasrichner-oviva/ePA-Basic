@@ -35,7 +35,7 @@ endif::[]
 :sectnums:
 
 // :revdate: 30.01.2024
-:revnumber: 3.0.2
+:revnumber: 3.1.0 Release Candidate
 :document-title: Grobkonzept der "ePA für alle"
 :document-subtitle: gemKPT_ePAfuerAlle
 :organization: gematik GmbH
@@ -48,7 +48,7 @@ endif::[]
 
 ifdef::backend-pdf[]
 [.metadata]
-//Version: 3.0, 30.01.2024
+//Version: 3.1.0 Pre-Release Review, 27.3.2024
 endif::[]
 
 
@@ -102,7 +102,23 @@ endif::[]
 |Anpassung Service-Lokalisierung; Veröffentlichung
 |gematik
 
+|3.1.0 Pre-Release Review
+|27.03.2024
+|5.10
+|EU-Zugriff
+|gematik
 
+|3.1.0 Pre-Release Review
+|06.06.2024
+|5.9
+|Forschung
+|gematik
+
+|3.1.0 RC
+|15.07.2024
+|
+|Veröffentlichung zur Kommentierung
+|gematik
 |===
 
 toc::[]
@@ -215,6 +231,29 @@ Der *Basis-Consumer* stellt das Gegenstück zum Konnektor in den Rechenzentren d
 
 Der *E-Rezept-Fachdienst* (eRP-FD) speichert bei fehlendem Widerspruch alle Verordnungsdaten und die zugehörigen Dispensierinformationen in der Akte des Versicherten ab, damit diese Informationen im *digital gestützten Medikationsprozess* (dgMP) über die *elektronische Medikationsliste* (eML) verwendet werden können. Dem dgMP kann separat widersprochen werden (siehe <<#_widerspruch, Consent Management>>).
 
+[#_rki]
+:sectnums!:
+[discrete]
+==== Vertrauensstelle des RKI
+:sectnums:
+
+Die *Vertrauensstelle des RKI* (VST) ermöglicht es die verschiedenen Datenfreigaben an das *FDZ* durch einen Versicherten zusammenzuführen, ohne den Versicherten identifizierbar zu machen. Die *VST* übersetzt die LIeferpseudoname in ein periodenübergreifendes Pseudonym.
+
+[#_fdz]
+:sectnums!:
+[discrete]
+==== Forschungsdatenzentrum
+:sectnums:
+
+Das *Forschungsdatenzentrum* (FDZ) ist der Empfänger der pseudonymisierten Daten des Versicherten, die bei fehlendem Widerspruch automatisch an das *FDZ* übermittelt werden. Das *FDZ* übernimmt die übermittelten Daten unter Verwendung des periodenübergreifenen Pseudonyms der VST in sein Datenmodell und bedient daraus Anfragen der Forschung unter bewahrung der Annonymität des Versicherten. Der Versicherte kann die Verwendung seiner Daten auf bestimmte Forschungszwecke einschränken.
+
+[#_ncpeh]
+:sectnums!:
+[discrete]
+==== NCPeH-Fachdienst
+:sectnums:
+
+Der *NCPeH-Fachdienst* ermöglicht die Bereitstellung der Gesundheitsdaten (z.B. ePKA) für autorisierte Leistungserbringer im EU-Ausland (LE-EU).
 
 :sectnums!:
 [discrete]
@@ -336,7 +375,7 @@ Kennt kein Aktensystem die Akte, hat der Versicherte der Bereitstellung einer eP
 
 === Login in die Akte des Versicherten
 
-Ein ePA-Client (Primärsystem, ePA-FdV, Clientsystem der Kostenträger oder der Ombugdsstelle) oder der E-Rezept-Fachdienst baut einen Kanal in die VAU des Aktensystems auf und authentifiziert dabei die VAU als authentische VAU des Anbieters. Nachfolgend wird eine User Session für den Nutzer angelegt und der Nutzer mit Hilfe des *IDP-Dienstes*, des *Sektoralen IdPs (GesundheitsID)* oder über einen mit dem Zertifikatsprofil C.FD.AUT zugehörigen Schlüsssel - selbst signiertes IDToken (nur Dienste der TI) - authentifiziert.
+Ein ePA-Client (Primärsystem, ePA-FdV, Clientsystem der Kostenträger, Ombudsstelle oder NCPeH-Fachdienst) oder der E-Rezept-Fachdienst baut einen Kanal in die VAU des Aktensystems auf und authentifiziert dabei die VAU als authentische VAU des Anbieters. Nachfolgend wird eine User Session für den Nutzer angelegt und der Nutzer mit Hilfe des *IDP-Dienstes*, des *Sektoralen IdPs (GesundheitsID)* oder über einen mit dem Zertifikatsprofil C.FD.AUT zugehörigen Schlüsssel - selbst signiertes IDToken (nur Dienste der TI) - authentifiziert.
 
 Nach erfolgreicher Aktivierung der User Session können Anfragen vom ePA-Client bzw. E-Rezept-Fachdienst an beliebige Akten gerichtet werden. Mit der ersten Anfrage an eine bestimmte Akte wird diese nach Befugnisprüfung in der User Session als *Health Record Context* geladen und Fachoperationen können beliebig ausgeführt werden.
 
@@ -354,6 +393,8 @@ include::chapters/device_management.adoc[]
 include::chapters/email_management.adoc[]
 include::chapters/audit_event_service.adoc[]
 include::chapters/relocation_service.adoc[]
+include::chapters/research_data_submission.adoc[]
+include::chapters/eu_access.adoc[]
 endif::[]
 ifdef::env-github[]
 link:./chapters/account_creation.adoc[Anlage einer Akte]
@@ -369,6 +410,8 @@ link:./chapters/device_management.adoc[Device Management]
 link:./chapters/audit_event_service.adoc[Audit Event Service]
 
 link:./chapters/relocation_service.adoc[Anbieterwechsel (Health Record Relocation Service)]
+
+link:./chapters/research_data_submission.adoc[Datenübermittlung an das FDZ (Research Data Submission)]
 endif::[]
 
 
@@ -379,7 +422,7 @@ In diesem Kapitel werden technische Konzepte zu verschiedenen Medical Services d
 
 In den folgenden Links werden technische Konzepte zu verschiedenen Medical Services der ePA vorgestellt, die als Basis für die Spezifikation dienen.
 
-link:https://github.com/gematik/ePA-XDS-Document/tree/ePA-3.0.2/concept[Dokumentenmanagement (XDS Document Service)]
+link:https://github.com/gematik/ePA-XDS-Document/tree/ePA-3.1.0/concept[Dokumentenmanagement (XDS Document Service)]
 
 
 [#_versorgungsprozesse]
@@ -387,7 +430,7 @@ link:https://github.com/gematik/ePA-XDS-Document/tree/ePA-3.0.2/concept[Dokument
 
 Die ePA unterstützt verschiedene Versorgungsprozesse mittels dedizierter Medical Services. Initial unterstützt die Fachanwendung ePA den *digital gestützten Medikationsprozess* (dgMP) durch die Bereitstellung einer Elektronischen Medikationsliste (eML) über einen FHIR Data Service.
 
-link:https://github.com/gematik/ePA-Medication/tree/ePA-3.0.2/concept[Medikationsprozess (Medication Service)]
+link:https://github.com/gematik/ePA-Medication/tree/ePA-3.1.0/concept[Medikationsprozess (Medication Service)]
 
 
 [#_glossar]
@@ -445,7 +488,9 @@ link:https://github.com/gematik/ePA-Medication/tree/ePA-3.0.2/concept[Medikation
 
 //*M*
 
-//*N*
+*N*
+
+* NCPeH - National Contact Point for eHealth
 
 *O*
 
