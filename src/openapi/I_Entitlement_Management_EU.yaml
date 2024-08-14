@@ -41,11 +41,16 @@ info:
     name: Apache 2.0
     url: 'https://www.apache.org/licenses/LICENSE-2.0'
 
-  version: 0.0.1 
+  version: 1.0.0 
 
   # version history:
   # ----------------
- 
+  # version 1.0.1
+  #   - changed logging condition to success cases only
+  # version 1.0.0
+  #   - first version
+  #   - typo correction in tags
+  #   - editorial: set actorId and insurantId to lowerCamelCase in descriptions and jwt for alignment with specification
   # version 0.0.1
   #   - initial version
 
@@ -116,7 +121,7 @@ paths:
       - $ref: '#/components/parameters/useragent'
     post:
       tags:
-        - Entitlement-EU
+        - Entitlements-EU
       operationId: setEntitlementEu
       summary: (setEntitlementEu) Set a single entitlement for a specific NCPeH
       description: |
@@ -179,7 +184,7 @@ paths:
        | Postconditions                        | Remarks |
        |---------------------------------------|---------|
        | The valid and completed entitlement is stored in SecureDataStorage | a possible existing entitlement with same _oid_ is replaced |
-       | A log-entry for the operation exists | all operation results |
+       | A log-entry for the operation exists | successful operation only |
        | The raw-data of the operation is collected and associated to _useragent_ | for any operation result according to gemSpec_Perf UC_A2.2 and UC_A2.5 |
 
       requestBody:
@@ -403,7 +408,7 @@ components:
             - payload claims:
               - "iat": issued at timestamp
               - "exp": expiry timestamp (always iat + 20min)
-              - "insurantid": the health record identifier this entitlement is assoctiated to
+              - "insurantId": the health record identifier this entitlement is assoctiated to
               - "actorId": telematik-td (of counntry-specific NCPeH)
               - "oid": value of professionOID (shall be oid_ncpeh)
               - "displayName": name according to actorId
@@ -411,7 +416,7 @@ components:
           type: string
           format: application/jwt
           pattern: ^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$
-          example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsIng1YyI6ImNlcnRpZmljYXRlIGMuY2guc2lnIn0.eyJpYXQiOjE3MzY4OTkyMDAsImV4cCI6MTczNjkwMDQwMCwiaW5zdXJhbnRpZCI6IkExMjM0NTY3ODkiLCJhY3RvcmlkIjoiOS04ODMxMTAwMDAwMzU5ODEiLCJvaWQiOiIxLjIuMjc2LjAuNzYuNC4yOTIiLCJkaXNwbGF5TmFtZSI6IkZyYW5rcmVpY2ggKEZSKSJ9.e3NpZ25hdHVyZU92ZXJIZWFkZXJBbmRQYXlsb2FkfQ"
+          example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsIng1YyI6ImNlcnRpZmljYXRlIGMuY2guc2lnIn0.eyJpYXQiOjE3MzY4OTkyMDAsImV4cCI6MTczNjkwMDQwMCwiaW5zdXJhbnRJZCI6IkExMjM0NTY3ODkiLCJhY3RvcklkIjoiOS04ODMxMTAwMDAwMzU5ODEiLCJvaWQiOiIxLjIuMjc2LjAuNzYuNC4yOTIiLCJkaXNwbGF5TmFtZSI6IkZyYW5rcmVpY2ggKEZSKSJ9.e3NpZ25hdHVyZU92ZXJIZWFkZXJBbmRQYXlsb2FkfQ"
         accessCode:
           $ref: '#/components/schemas/AccessCodeType'
       required:

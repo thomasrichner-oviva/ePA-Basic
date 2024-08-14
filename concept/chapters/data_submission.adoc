@@ -24,11 +24,11 @@ ifdef::env-github[]
 image::Gematik_Logo_Flag.png[gematik,width=20%,float="right"]
 endif::[]
 
-[#_forschungsdaten]
-=== Verarbeitung von Daten der elektronischen Patientenakten zu Forschungszwecken
-Die Daten der elektronischen Patientenakten sollen nach § 363 Absatz 1 SGB V für die in § 303e Absatz 2 SGB V aufgeführten Forschungszwecke zugänglich gemacht und hierfür in pseudonymisierter Form automatisiert von den ePA-Aktensystemen an das Forschungsdatenzentrum (FDZ) nach § 303d SGB V übermittelt werden, sofern Versicherte dem nicht widerprochen haben. 
+[#_sekundärdaten]
+=== Verarbeitung von Daten der elektronischen Patientenakten zu Sekundärnutzungszwecken 
+Die Daten der elektronischen Patientenakten sollen nach § 363 Absatz 1 SGB V für die in § 303e Absatz 2 SGB V aufgeführten Sekundärnutzungszwecke zugänglich gemacht und hierfür in pseudonymisierter Form automatisiert von den ePA-Aktensystemen an das Forschungsdatenzentrum (FDZ) nach § 303d SGB V übermittelt werden, sofern Versicherte dem nicht widerprochen haben. 
 
-image::Feature-Research-Submission.png[caption="Abbildung {counter:figure}: ", reftext="Abbildung {figure}", title="Research Data Submission - Beteiligte Komponenten",width=100%, pdfwidth=100%,float="center",align="center",title-align="center"]
+image::Feature-Data-Submission.png[caption="Abbildung {counter:figure}: ", reftext="Abbildung {figure}", title="Data Submission Service - Beteiligte Komponenten",width=100%, pdfwidth=100%,float="center",align="center",title-align="center"]
 
 Neben dem FDZ und den ePA-Aktensystemen ist die Vertrauensstelle nach § 303c SGB V im Prozess involviert. Deren Aufgabe ist es, die von den ePA-Aktensystemen erhaltenen Lieferpseudonyme in periodenübergreifende Pseudonyme umzuwandeln und diese an das FDZ zu übermitteln.
 
@@ -78,18 +78,18 @@ Das Squenzdiagramm der folgenden Abbildung zeigt den Ablauf der Übermittlung de
 
 ifndef::env-github[]
 
-[#fig:research-submission]
-[plantuml, "{diagramsdir}/researchsubmission", svg]
-[caption="Abbildung {counter:figure}: ", reftext="Abbildung {figure}", title="Ablauf der Übermittlung von Forschungsdaten",width=100%, pdfwidth=100%,float="center",align="center",title-align="center"]
+[#fig:data-submission]
+[plantuml, "{diagramsdir}/datasubmission", svg]
+[caption="Abbildung {counter:figure}: ", reftext="Abbildung {figure}", title="Ablauf der Übermittlung von Daten zur Sekundärnutzung durch das FDZ",width=100%, pdfwidth=100%,float="center",align="center",title-align="center"]
 ....
-include::{chapterplantumlsdir}/researchsubmission.puml[]
+include::{chapterplantumlsdir}/datasubmission.puml[]
 ....
 
 endif::[]
 
 ifdef::env-github[]
 
-image::plantuml/researchsubmission.svg[caption="Abbildung {counter:figure}: ", reftext="Abbildung {figure}", title="Ablauf der Übermittlung von Forschungsdaten",width=100%, pdfwidth=100%,float="center",align="center",title-align="center"]
+image::plantuml/datasubmission.svg[caption="Abbildung {counter:figure}: ", reftext="Abbildung {figure}", title="Ablauf der Übermittlung von Daten zur Sekundärnutzung durch das FDZ",width=100%, pdfwidth=100%,float="center",align="center",title-align="center"]
 
 endif::[]
 
@@ -106,7 +106,9 @@ Im Einzelnen ist der Ablauf wie folgt:
 * _send package_fdz for submissionID=x_: Das ePA-Aktensystem sendet das zur Lieferung submissionID=x gehörende Datenpaket package_fdz an das FDZ. Wurde das package_fdz erfolgreich an das FDZ übermittelt, löscht das ePA-Aktensystem die Datenpakete package_vst und package_fdz.
 
 In obigen Ablauf kann es zu Fehlern kommen. Die folgende Tabelle zeigt die entsprechenden Reaktionen.
- 
+
+[caption="Tabelle {counter:table-number}: "]
+.FDZ-Fehler
 [width="100%",cols="30%,70%,options="header",]
 |===
 |*Fehler*
@@ -119,20 +121,18 @@ In obigen Ablauf kann es zu Fehlern kommen. Die folgende Tabelle zeigt die entsp
 
 Um die Signalisierung vom FDZ in Richtung des Aktensystems zu ermöglichen, muss dem FDZ bekannt sein, mit welchem ePA-Aktensystem es interagieren. Das kann z.B. durch Callback-Links im Request oder eindeutige Identifier für das ePA-Aktensystem in der SubmissionID gelöst werden.
 
-===== Verzögerte Nutzung der Forschungsdaten
+===== Widerspruchsfrist für die Übermittlung von Daten an das FDZ
 
-Da die Übermittlung von Forschungsdaten im opt-out stattfindet und die Versicherten genug Zeit haben müssen, ihren Widerspruch zu formulieren, dürfen die übermittelten Daten für eine gewisse Zeit noch nicht im FDZ verwendet werden. Der Zeitpunkt ab dem die Daten verwendet werden dürfen wird in Abstimmung mit den Kostenträgern festgelegt.
+Da die Übermittlung von Daten zur Sekundärnutzung durch das FDZ im opt-out stattfindet und die Versicherten genug Zeit haben müssen, ihren Widerspruch zu formulieren, startet die Übermittlung von Daten an das FDZ erst nach einer angemessenen Frist, die durch die Kostenträger festgelegt wird. Erst nach Ablauf dieser Frist werden alle neu anfallenden Daten an das FDZ übermittelt.
 
-Durch die Übermittlung von erfolgten Widersprüchen und die daraus resultierende Löschung der entsprechenden Daten im FDZ in dieser Phase ist sicher gestellt, dass zum Zeitpunkt der aktiven Nutzung der Daten durch das FDZ dort nur noch Daten vorliegen, die verwendet werden dürfen.
-
-Diese Phase kann auch im Sinne einer Validierung im Produktivbetrieb gesehen werden.
+Dies soll dem Versicherten ausreichend Zeit geben, seinen Widerspruch formulieren zu können.
 
 ==== Widerspruch 
 Bei Anlage eines Aktenkontos für einen Versicherten ist die Übermittlung der Daten an das FDZ standardmäßig vorgesehen (opt-out). Ein Widerspruch dagegen erfolgt über das *Consent Management*.
-Versicherte oder vom Versicherten befugte Vertreter können unter Nutzung eines ePA-FdVs jederzeit bestimmten Zwecken nach § 303e Absatz 2 SGB V widersprechen. Diese Widersprüche können mitels ePA-FdV jederzeit wieder zurückgenommen werden.
-Versicherte können die Widersprüche bzw. die Rücknahme von Widersprüchen zudem jederzeit gegenüber der Ombudsstelle gemäß § 342a SGB V erklären. Die Ombudsstelle setzt die vom Versicherten gewünschten Widerspruchsänderungen dann im Aktenkonto des Versicherten um. Widersprüche gegen bestimmte Zwecke nach § 303e Absatz 2 SGB V können nur erklärt werden, wenn kein Widerspruch gegen die Übermittlung von Daten an das FDZ vorliegt.
+Versicherte oder vom Versicherten befugte Vertreter können unter Nutzung eines ePA-FdVs jederzeit bestimmten Sekundärnutzungszwecken nach § 303e Absatz 2 SGB V widersprechen. Diese Widersprüche können mitels ePA-FdV jederzeit wieder zurückgenommen werden.
+Versicherte können die Widersprüche bzw. die Rücknahme von Widersprüchen zudem jederzeit gegenüber der Ombudsstelle gemäß § 342a SGB V erklären. Die Ombudsstelle setzt die vom Versicherten gewünschten Widerspruchsänderungen dann im Aktenkonto des Versicherten um. Widersprüche gegen bestimmte Sekundärnutzungszwecke nach § 303e Absatz 2 SGB V können nur erklärt werden, wenn kein Widerspruch gegen die Übermittlung von Daten an das FDZ vorliegt.
 
-Die aktuellen Widersprüche eines Versicherten werden in dessen Aktenkonto im Widerspruchsmanagmenet (Consent Management) gespeichert und können darüber verwaltet werden. Neben dem Widerspruch gegen die Übermittlung insgesamt, müssen auch die einzelnen Zwecke nach § 303e Absatz 2 SGB V über das Widerspruchsmangement verwaltbar sein.
+Die aktuellen Widersprüche eines Versicherten werden in dessen Aktenkonto im Widerspruchsmanagement (Consent Management) gespeichert und können darüber verwaltet werden. Neben dem Widerspruch gegen die Übermittlung insgesamt, müssen auch die einzelnen Sekundärnutzungszwecke nach § 303e Absatz 2 SGB V über das Widerspruchsmangement verwaltbar sein.
 
 Das ePA-Aktensystem übermittelt Widerspruchsänderungen analog zur Übermittlung der pseudonymisierten medizinischen Daten ans FDZ, d.h. für einen Versicherten wird vom ePA-Aktensystem das Lieferpseudonym des Versicherten berechnet und eine zufällige Arbeitsnummer erzeugt. Das Lieferpseudonym und die Arbeitsnummer werden an die Vertrauensstelle übermittelt, die Widersprüche mit Arbeitsnummer an das FDZ. 
 
@@ -140,18 +140,20 @@ Widersprüche werden vom ePA-Aktensystem mit der nächsten regulären Datenliefe
 
 Die folgende Tabelle beschreibt die Auswirkungen von Widerspruchsänderungen.
 
+[caption="Tabelle {counter:table-number}: "]
+.Auswirkungen bei Widerspruchsänderung
 [width="100%",cols="20%,80%,options="header",]
 |===
 |*Widerspruchsänderung*
 |*Auswirkungen*
 
-|Widerspruch gegen einzelne Zwecke nach § 303e Absatz 2 SGB V bzw. deren Rücknahme
-|Das ePA-Aktensystem übermittelt die Änderungen bei den Widersprüchen zu den Zwecken nach § 303e Absatz 2 SGB V an das FDZ. Das ePA-Aktensystem übermittelt weiterhin unverändert Daten an das FDZ. Die vom Versicherten geäußerte Änderung der Zweckbeschränkung ist vom FDZ durchzusetzen.
+|Widerspruch gegen einzelne Sekundärnutzungszwecke nach § 303e Absatz 2 SGB V bzw. deren Rücknahme
+|Das ePA-Aktensystem übermittelt die Änderungen bei den Widersprüchen zu den Sekundärnutzungszwecken nach § 303e Absatz 2 SGB V an das FDZ. Das ePA-Aktensystem übermittelt weiterhin unverändert Daten an das FDZ. Die vom Versicherten geäußerte Änderung der Zweckbeschränkung ist vom FDZ durchzusetzen.
 
 |===
 
 
-Alle Widerspruchsänderungen werden für den Versicherten mit Datum und Uhrzeit im Audit Event Service protokolliert. Ein Protokolleintrag für eine Widerspruchsänderung enthält zudem die Information, wer die Widerspruchänderung im Aktenkonto durchgeführt hat (Versicherter, Vertreter, Ombudsstelle), welche Widersprüche geändert wurden (insgesamt bzw. spezielle Zwecke nach § 303e Absatz 2 SGB V) und die Art der Änderung (Widerspruch gesetzt, Widerspruch zurückgenommen).
+Alle Widerspruchsänderungen werden für den Versicherten mit Datum und Uhrzeit im Audit Event Service protokolliert. Ein Protokolleintrag für eine Widerspruchsänderung enthält zudem die Information, wer die Widerspruchänderung im Aktenkonto durchgeführt hat (Versicherter, Vertreter, Ombudsstelle), welche Widersprüche geändert wurden (insgesamt bzw. spezielle Sekundärnutzungszwecke nach § 303e Absatz 2 SGB V) und die Art der Änderung (Widerspruch gesetzt, Widerspruch zurückgenommen).
 
 ==== Testintegration
 Da die Dienste VST und FDZ als WANDA Smart an die Telematikinfrastruktur angebunden sind und keinen Zugang zur Testumgebung der TI haben, erfolgt der Integrationstest mit diesen Diensten in der Referenzumgebung der TI (RU). Beide Dienste müssen dort in einer produktivanalogen Version angebunden sein. D.h. sie entsprechen in Aufbau und Funktionalität dem Produkt, dass später in der Produktivumgebung (PU) zum Einsatz kommt.
@@ -171,10 +173,10 @@ Teilnehmer:  Hersteller ePA Aktensystem und E-Rezept-Fachdienst, Betreiber VST u
 *Zulassungstest gematik*
 
 Die gematik plant keine eigenen E2E-Zulassungstests für die ePA-Aktensysteme in Bezug auf die Datenfreigabe zu
-Forschungszwecken. Test- und Referenzobjekte seitens FDZ und VST werden daher in der TU nicht benötigt.
+Sekundärnutzungszwecken. Test- und Referenzobjekte seitens FDZ und VST werden daher in der TU nicht benötigt.
 
 ==== Betriebliche Integration
-Die Dienste VST und das FDZ Gesundheit sind als Backend-Dienste der Aktensysteme integraler Bestandteil des Features der Datenausleitung an die Forschung. Aufgrund dieser wichtigen Rolle muss eine enge betriebliche Integration in die Prozesse der Telematikinfrastruktur erfolgen. Diese umfasst insbesondere
+Die Dienste VST und das FDZ Gesundheit sind als Backend-Dienste der Aktensysteme integraler Bestandteil des Features der Datenausleitung an das FDZ. Aufgrund dieser wichtigen Rolle muss eine enge betriebliche Integration in die Prozesse der Telematikinfrastruktur erfolgen. Diese umfasst insbesondere
 
 * das Probing der Dienste, um deren Betriebsbereitschaft zu erkennen
 * die Integration in die Betriebsprozesse der TI im Hinblick auf das Zusammenspiel von Aktensystem, VST und FDZ

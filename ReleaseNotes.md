@@ -1,6 +1,32 @@
 <img align="right" width="250" height="47" src="images/Gematik_Logo_Flag_With_Background.png"/> <br/>    
  
 # Release Notes ePA Basic
+## Release 3.1.0
+-  release ePA-3.1.0
+### changes
+- integrate all changes from ePA-3.0.2-1:
+    - added x-authoriztaion-validation parameter in I_Authoriztaion_Service.yaml (C_11901)
+    - introduce 'data' as common property for arrays in responses in I_Consent_Decision_Management.yaml, I_Entitlement_Management.yaml and I_Information_Service.yaml (C_11949)
+    - editorial correction spelling actorId and insurantId in I_Entitlement_Management.yaml and I_Entitlement_Management_EU.yaml
+    - corrections regarding email handling in case of representative entitlement in I_Entitlement_Management.yaml (alignment with changes from C_11885)
+    - renamed lastLogin to lastUse in I_Device_Management_Insurant.yaml
+    - define deviceIdentifier and -Token as mandatory in I_Device_Management_Insurant.yaml
+    - removed obsolete status code 403 in setEmailAddress in I_Email_Management.yaml    
+    - fixed examples in I_Audit_Event.yaml 
+    - added kvnr and name in response of sendAuthCodeFdv in I_Authorization_Service.yaml
+    - removed redundant deviceIdentifier in registerDevice response schema in I_Device_Management_Insurant.yaml (C_11957)
+    - added status code 404 'notHomeSystem' to replaceEmailAddress in I_Email_Management.yaml
+    - replaced operationOutcome responses in I_Audit_Event.yaml (C_11958)
+    - changed logging conditions in I_Entitlement_Management.yaml (C_11960)
+    - reworked email address management in I_Email_Management.yaml (C_11965)- changed status code for data usage purposes operations in I_Consent_Decision_Management.yaml
+- revised API for research data centre package download in I_Data_Submission_Service.yaml
+- introduce user specific deny policy for medication service access 
+- update list of affected oids and fixed some typos in I_Entitlement_Management.yaml (editorial)
+- renamed I_Research_Data_Submission.yaml to I_Data_Submission_Service.yaml
+- renamed several terms related to "research". Purposes of submitted data is now "secondary usage" in I-Consent_Management.yaml and I_Data_Submission_Service.yaml
+- transitioned the Audit Event Service from its existing OpenAPI specification to a FHIR Implementation Guide (IG)
+- changed logging conditions in I_Entitlement_Management_EU.yaml (according to change in ePA-3.0.2-1 - C_11960)
+- add tutorial "Strukturierte Dokumente"
 ## Release 3.1.0 RC
 - release candidate ePA-3.1.0 
 ### changes
