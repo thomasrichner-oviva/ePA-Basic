@@ -16,8 +16,8 @@
 | Medication Service | [**ePA Medication (3.1.0)**](https://github.com/gematik/ePA-Medication/tree/ePA-3.1.0) |
 | XDS Document Service | [**ePA XDS Document (3.1.0)**](https://github.com/gematik/ePA-XDS-Document/tree/ePA-3.1.0) |
 | FHIR Resources | [**de.gematik.epa (1.1.0)**](https://simplifier.net/packages/de.gematik.epa/1.1.0) |
-| Implementation Guide | [**ePA Patient Information Service (1.1.0)**](https://simplifier.net/guide/patient-information-service?version=1.0.0) |
-| Implementation Guide | [**ePA Audit Event Service (1.1.0)**](https://simplifier.net/guide/audit-event-service?version=1.0.0) |
+| Implementation Guide | [**ePA Patient Information Service (1.0.0)**](https://simplifier.net/guide/patient-information-service?version=1.0.0) |
+| Implementation Guide | [**ePA Audit Event Service (1.0.0)**](https://simplifier.net/guide/audit-event-service?version=1.0.0) |
 | Account Relocation | [**ref-ePA-HealthRecordMigration (3.1)**](https://github.com/gematik/ref-ePA-HealthRecordMigration/tree/ePA-3.1) |
 | Data Submission | [**Data submission to research data center (3.1)**](https://github.com/gematik/epa-research/tree/ePA-3.1) |  
 
