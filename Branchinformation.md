@@ -22,7 +22,6 @@
 | Data Submission | [**Data submission to research data center (3.1)**](https://github.com/gematik/epa-research/tree/ePA-3.1) |  
 
 </br>
-</br>
 
 ## About releases and associated branches
 Each normative release has its own branch within this repository.
